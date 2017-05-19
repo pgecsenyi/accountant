@@ -26,5 +26,5 @@ The meanings of the command line arguments above are as follows.
 
   * Windows 10
   * Go 1.7.4 Windows amd64
-  * Visual Studio Code 1.12.1
+  * Visual Studio Code 1.12.2
     * Extension: Go 0.6.61

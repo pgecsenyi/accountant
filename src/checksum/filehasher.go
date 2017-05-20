@@ -87,6 +87,21 @@ func (fh *FileHasher) Reset() {
 	(*fh).Fingerprints = list.New()
 }
 
+// VerifyFiles Verifies checksums in the stored list applying the given base path.
+func (fh *FileHasher) VerifyFiles(basePath string) {
+
+	for element := fh.Fingerprints.Front(); element != nil; element = element.Next() {
+		meta := element.Value.(*Fingerprint)
+		fullPath := path.Join(basePath, meta.Filename)
+		checksum := calculateChecksumForFile(fullPath, meta.Algorithm)
+		if util.Compare(checksum, meta.Checksum) {
+			log.Println("Valid checksum: " + meta.Filename)
+		} else {
+			log.Println("Invalid checksum: " + meta.Filename)
+		}
+	}
+}
+
 func (fh *FileHasher) recordChecksumForFile(basePath string, filePath string, algorithm string, prefixToRemove string) {
 
 	fullPath := path.Join(basePath, filePath)

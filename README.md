@@ -10,12 +10,12 @@ The application is able to perform three different tasks (determined by the `-ta
 
   * `-task calculate`: Calculate checksum for each file in the given directory and produce a CSV file containing the result.
     * `-indir`: The directory to calculate checksums for.
-    * `-alg`: The algorithm to use (`md5`, `sha1`, `sha256`, `sha512`).
+    * `-alg`: The algorithm to use (`crc32`, `md5`, `sha1`, `sha256`, `sha512`).
     * `-outchk`: The path of the output CSV.
     * `-bp`: Base path: the prefix which should be removed from each path in the output. Optional.
   * `-task compare`: Compare the content of a directory with an earlier snapshot and produce a file containing old name: new name pairs as well as a new CSV file with the updated filenames.
     * `-indir`: The directory to calculate checksums for.
-    * `-alg`: The algorithm to use (`md5`, `sha1`, `sha256`, `sha512`).
+    * `-alg`: The algorithm to use (`crc32`, `md5`, `sha1`, `sha256`, `sha512`).
     * `-inchk`: The path of the earlier generated CSV.
     * `-outchk`: The path of the output CSV.
     * `-bp`: Base path: the prefix which should be removed from each path in the output. Optional.

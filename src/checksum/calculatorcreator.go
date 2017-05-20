@@ -6,7 +6,11 @@ import (
 	"crypto/sha256"
 	"crypto/sha512"
 	"hash"
+	"hash/crc32"
 )
+
+// CRC32 Identifies the CRC32 algorithm.
+const CRC32 string = "crc32"
 
 // MD5 Identifies the MD5 algorithm.
 const MD5 string = "md5"
@@ -23,7 +27,9 @@ const SHA512 string = "sha512"
 // CreateCalculator Creates the appropriate ChecksumCalculator for the given algorithm.
 func CreateCalculator(algorithm string) hash.Hash {
 
-	if algorithm == MD5 {
+	if algorithm == CRC32 {
+		return crc32.NewIEEE()
+	} else if algorithm == MD5 {
 		return md5.New()
 	} else if algorithm == SHA1 {
 		return sha1.New()

@@ -3,8 +3,10 @@ package util
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
+// CheckErr Displays the given error message if an error has happened and interrupts execution.
 func CheckErr(err error, message string) {
 
 	if err != nil {
@@ -15,6 +17,7 @@ func CheckErr(err error, message string) {
 	}
 }
 
+// CheckErrDontPanic Displays the given error message if an error has happened.
 func CheckErrDontPanic(err error, message string) {
 
 	if err != nil {
@@ -26,6 +29,17 @@ func CheckErrDontPanic(err error, message string) {
 	}
 }
 
+// CheckIfFileExists Checks whether the given file exist or not.
+func CheckIfFileExists(path string) bool {
+
+	if stat, err := os.Stat(path); err == nil && !os.IsNotExist(err) && !stat.IsDir() {
+		return true
+	}
+
+	return false
+}
+
+// Compare Compares 2 slices of bytes, returns true if they are equal, otherwise returns false.
 func Compare(slice1 []byte, slice2 []byte) bool {
 
 	if (slice1 == nil && slice2 != nil) || (slice1 != nil && slice2 == nil) {

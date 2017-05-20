@@ -5,9 +5,9 @@ import (
 	"container/list"
 	"encoding/csv"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"runtime"
@@ -69,15 +69,7 @@ func (fh *FileHasher) ImportFromCsv(filename string) {
 
 		checksumBytes, err := hex.DecodeString(record[1])
 		util.CheckErrDontPanic(err, "")
-
-		fp := new(Fingerprint)
-		fp.Filename = record[0]
-		fp.Checksum = checksumBytes
-		fp.Algorithm = record[2]
-		fp.CreatedAt = record[3]
-		fp.Creator = record[4]
-		fp.Note = record[5]
-		fh.Fingerprints.PushFront(fp)
+		fh.addFingerprint(record, checksumBytes)
 	}
 }
 
@@ -90,16 +82,30 @@ func (fh *FileHasher) Reset() {
 // VerifyFiles Verifies checksums in the stored list applying the given base path.
 func (fh *FileHasher) VerifyFiles(basePath string) {
 
+	numberOfInvalid := 0
+	numberOfNonExisting := 0
+
 	for element := fh.Fingerprints.Front(); element != nil; element = element.Next() {
 		meta := element.Value.(*Fingerprint)
 		fullPath := path.Join(basePath, meta.Filename)
-		checksum := calculateChecksumForFile(fullPath, meta.Algorithm)
-		if util.Compare(checksum, meta.Checksum) {
-			log.Println("Valid checksum: " + meta.Filename)
+		if !util.CheckIfFileExists(fullPath) {
+			fmt.Println(fmt.Sprintf("%s does not exist", meta.Filename))
+			numberOfNonExisting++
 		} else {
-			log.Println("Invalid checksum: " + meta.Filename)
+			checksum := calculateChecksumForFile(fullPath, meta.Algorithm)
+			if !util.Compare(checksum, meta.Checksum) {
+				fmt.Println(fmt.Sprintf("%s has an invalid checksum", meta.Filename))
+				numberOfInvalid++
+			}
 		}
 	}
+
+	numberOfAll := fh.Fingerprints.Len()
+	fmt.Println()
+	fmt.Printf(
+		"Valid: %d/%d, missing: %d, invalid: %d.",
+		numberOfAll-numberOfNonExisting-numberOfInvalid,
+		numberOfAll, numberOfNonExisting, numberOfInvalid)
 }
 
 func (fh *FileHasher) recordChecksumForFile(basePath string, filePath string, algorithm string, prefixToRemove string) {
@@ -115,7 +121,6 @@ func (fh *FileHasher) recordChecksumForFile(basePath string, filePath string, al
 	fp.CreatedAt = currentTime
 	fp.Creator = runTimeVersion
 	fp.Note = ""
-
 	fh.Fingerprints.PushFront(fp)
 }
 
@@ -125,6 +130,18 @@ func readFileContent(filename string) []byte {
 	util.CheckErr(err, "Cannot read file "+filename+".")
 
 	return content
+}
+
+func (fh *FileHasher) addFingerprint(record []string, checksumBytes []byte) {
+
+	fp := new(Fingerprint)
+	fp.Filename = record[0]
+	fp.Checksum = checksumBytes
+	fp.Algorithm = record[2]
+	fp.CreatedAt = record[3]
+	fp.Creator = record[4]
+	fp.Note = record[5]
+	fh.Fingerprints.PushFront(fp)
 }
 
 func calculateChecksumForFile(filename string, algorithm string) []byte {
@@ -160,7 +177,6 @@ func writeChecksumsToCsvFile(records [][]string, filename string) {
 	file, err := os.Create(filename)
 	util.CheckErrDontPanic(err, "Cannot read file "+filename)
 
-	// writeCsv(records, os.Stdout)
 	writeCsv(records, file)
 
 	defer file.Close()
@@ -173,8 +189,5 @@ func writeCsv(records [][]string, destination io.Writer) {
 	// Calls Flush internally.
 	writer.WriteAll(records)
 
-	if err := writer.Error(); err != nil {
-		log.Println("Error writing csv. ", err)
-		return
-	}
+	util.CheckErrDontPanic(writer.Error(), "Error writing CSV.")
 }

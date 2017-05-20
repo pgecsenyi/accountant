@@ -39,7 +39,7 @@ func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, o
 	cache := buildFingerprintCache(oldFingerprints)
 
 	f, err := os.OpenFile(outputPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
-	util.CheckErr(err, "Cannot open output CSV.")
+	util.CheckErr(err, "Cannot open output for name pairs: "+outputPath)
 	defer f.Close()
 
 	compareFingerprints(cache, newFingerprints, f)
@@ -59,7 +59,7 @@ func buildFingerprintCache(fingerprints *list.List) map[string]*checksum.Fingerp
 
 func compareFingerprints(oldFingerprints map[string]*checksum.Fingerprint, newFingerprints *list.List, output *os.File) {
 
-	var foundFingerprints map[string]bool = make(map[string]bool)
+	foundFingerprints := make(map[string]bool)
 
 	for element := newFingerprints.Front(); element != nil; element = element.Next() {
 		newFp := element.Value.(*checksum.Fingerprint)

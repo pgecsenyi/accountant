@@ -5,7 +5,7 @@ import (
 	"util"
 )
 
-// Comparer Stores settings related to checksum calculation.
+// Calculator Stores settings related to checksum calculation.
 type Calculator struct {
 	InputDirectory  string
 	OutputChecksums string

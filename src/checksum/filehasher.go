@@ -54,8 +54,8 @@ func (fh *FileHasher) ExportToCsv(filename string) {
 	writeChecksumsToCsvFile(records, filename)
 }
 
-// ImportFromCsv Imports fingerprints from the given CSV file.
-func (fh *FileHasher) ImportFromCsv(filename string) {
+// LoadFromCsv Loads fingerprints from the given CSV file.
+func (fh *FileHasher) LoadFromCsv(filename string) {
 
 	content := readFileContent(filename)
 	reader := csv.NewReader(bytes.NewReader(content))

@@ -21,7 +21,7 @@ type Comparer struct {
 // RecordNameChangesForDirectory Verifies and stores changes in the given directory based on the checksums calculated earlier.
 func (comparer *Comparer) RecordNameChangesForDirectory(hasher *checksum.FileHasher) {
 
-	hasher.ImportFromCsv(comparer.InputChecksums)
+	hasher.LoadFromCsv(comparer.InputChecksums)
 	oldFingerprints := hasher.Fingerprints
 
 	hasher.Reset()

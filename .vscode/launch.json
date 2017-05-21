@@ -7,7 +7,7 @@
             "request": "launch",
             "mode": "debug",
             "cwd": "${workspaceRoot}",
-            "program": "${file}",
+            "program": "${workspaceRoot}/src/main.go",
             "env": { "GOPATH": "${cwd}" }
         },
         {

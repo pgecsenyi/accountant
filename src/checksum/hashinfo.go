@@ -16,7 +16,7 @@ const SHA256LEN int = 64
 const SHA512LEN int = 128
 
 // PATTERNCOMMON The Regular Expression for the common file types.
-const PATTERNCOMMON string = "^(?P<hash>[a-fA-F0-9]{%d}) \\*{0,1}(?P<file>.+)$"
+const PATTERNCOMMON string = "^(?P<hash>[a-fA-F0-9]{%d}) ( |\\*)(?P<file>.+)$"
 
 // PATTERNCRC32 The Regular Expression for the CRC32 file types.
 const PATTERNCRC32 string = "^(?P<file>.+) (?P<hash>[a-fA-F0-9]{%d})$"

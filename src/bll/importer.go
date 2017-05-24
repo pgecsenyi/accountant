@@ -58,26 +58,26 @@ func (importer *Importer) loadDataFromFile(
 
 	extension := path.Ext(filePath)
 
-	if extension == ".md5" {
-		fpPrototype.Algorithm = checksum.MD5
-		compilePattern(&importer.patternMd5, checksum.PATTERNCOMMON, checksum.MD5LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternMd5, '*')
-	} else if extension == ".sha" {
-		fpPrototype.Algorithm = checksum.SHA1
-		compilePattern(&importer.patternSha1, checksum.PATTERNCOMMON, checksum.SHA1LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha1, '*')
-	} else if extension == ".sha256" {
-		fpPrototype.Algorithm = checksum.SHA256
-		compilePattern(&importer.patternSha256, checksum.PATTERNCOMMON, checksum.SHA256LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha256, '*')
-	} else if extension == ".sha512" {
-		fpPrototype.Algorithm = checksum.SHA512
-		compilePattern(&importer.patternSha512, checksum.PATTERNCOMMON, checksum.SHA512LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha512, '*')
-	} else if extension == ".sfv" {
+	if extension == checksum.CRC32EXT {
 		fpPrototype.Algorithm = checksum.CRC32
 		compilePattern(&importer.patternCrc32, checksum.PATTERNCRC32, checksum.CRC32LEN)
 		parseFile(hasher, fpPrototype, filePath, importer.patternCrc32, ';')
+	} else if extension == checksum.MD5EXT {
+		fpPrototype.Algorithm = checksum.MD5
+		compilePattern(&importer.patternMd5, checksum.PATTERNCOMMON, checksum.MD5LEN)
+		parseFile(hasher, fpPrototype, filePath, importer.patternMd5, '*')
+	} else if extension == checksum.SHA1EXT {
+		fpPrototype.Algorithm = checksum.SHA1
+		compilePattern(&importer.patternSha1, checksum.PATTERNCOMMON, checksum.SHA1LEN)
+		parseFile(hasher, fpPrototype, filePath, importer.patternSha1, '*')
+	} else if extension == checksum.SHA256EXT {
+		fpPrototype.Algorithm = checksum.SHA256
+		compilePattern(&importer.patternSha256, checksum.PATTERNCOMMON, checksum.SHA256LEN)
+		parseFile(hasher, fpPrototype, filePath, importer.patternSha256, '*')
+	} else if extension == checksum.SHA512EXT {
+		fpPrototype.Algorithm = checksum.SHA512
+		compilePattern(&importer.patternSha512, checksum.PATTERNCOMMON, checksum.SHA512LEN)
+		parseFile(hasher, fpPrototype, filePath, importer.patternSha512, '*')
 	}
 }
 

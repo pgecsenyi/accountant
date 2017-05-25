@@ -132,8 +132,8 @@ func (app *Application) execute() {
 		importer := bll.NewImporter(app.config.inputDirectory, app.config.outputChecksum)
 		importer.Convert(&hasher)
 	} else if app.config.task == taskVerify {
-		verifier := bll.Verifier{app.config.inputChecksum, app.config.basePath}
-		verifier.VerifyRecords(&hasher)
+		verifier := bll.NewVerifier(app.config.inputChecksum, app.config.basePath)
+		verifier.Verify(&hasher)
 	}
 }
 

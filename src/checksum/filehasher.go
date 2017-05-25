@@ -5,7 +5,6 @@ import (
 	"container/list"
 	"encoding/csv"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -79,39 +78,10 @@ func (fh *FileHasher) Reset() {
 	(*fh).Fingerprints = list.New()
 }
 
-// VerifyFiles Verifies checksums in the stored list applying the given base path.
-func (fh *FileHasher) VerifyFiles(basePath string) {
-
-	numberOfInvalid := 0
-	numberOfNonExisting := 0
-
-	for element := fh.Fingerprints.Front(); element != nil; element = element.Next() {
-		meta := element.Value.(*Fingerprint)
-		fullPath := path.Join(basePath, meta.Filename)
-		if !util.CheckIfFileExists(fullPath) {
-			fmt.Println(fmt.Sprintf("%s does not exist", meta.Filename))
-			numberOfNonExisting++
-		} else {
-			checksum := calculateChecksumForFile(fullPath, meta.Algorithm)
-			if !util.Compare(checksum, meta.Checksum) {
-				fmt.Println(fmt.Sprintf("%s has an invalid checksum", meta.Filename))
-				numberOfInvalid++
-			}
-		}
-	}
-
-	numberOfAll := fh.Fingerprints.Len()
-	fmt.Println()
-	fmt.Printf(
-		"Valid: %d/%d, missing: %d, invalid: %d.",
-		numberOfAll-numberOfNonExisting-numberOfInvalid,
-		numberOfAll, numberOfNonExisting, numberOfInvalid)
-}
-
 func (fh *FileHasher) recordChecksumForFile(basePath string, filePath string, algorithm string, prefixToRemove string) {
 
 	fullPath := path.Join(basePath, filePath)
-	checksum := calculateChecksumForFile(fullPath, algorithm)
+	checksum := CalculateChecksumForFile(fullPath, algorithm)
 	normalizedPath := util.NormalizePath(fullPath)[len(prefixToRemove):]
 
 	fp := new(Fingerprint)
@@ -142,19 +112,6 @@ func (fh *FileHasher) addFingerprint(record []string, checksumBytes []byte) {
 	fp.Creator = record[4]
 	fp.Note = record[5]
 	fh.Fingerprints.PushFront(fp)
-}
-
-func calculateChecksumForFile(filename string, algorithm string) []byte {
-
-	file, err := os.Open(filename)
-	util.CheckErr(err, "Cannot read file "+filename+".")
-	defer file.Close()
-
-	calculator := CreateCalculator(algorithm)
-	io.Copy(calculator, file)
-	checksum := calculator.Sum(nil)[:]
-
-	return checksum
 }
 
 func createStringArrayFromFingerprints(fingerprints *list.List) [][]string {

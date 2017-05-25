@@ -1,4 +1,4 @@
-package checksum
+package dal
 
 import (
 	"bytes"
@@ -11,28 +11,18 @@ import (
 	"util"
 )
 
-// FileHasher Logic for calculating checksums.
-type FileHasher struct {
+// Db Logic for calculating checksums.
+type Db struct {
 	Fingerprints *list.List
 }
 
-// Fingerprint Stores the necessary data to identify a file and a bit more.
-type Fingerprint struct {
-	Filename  string
-	Checksum  []byte
-	Algorithm string
-	CreatedAt string
-	Creator   string
-	Note      string
-}
-
-// NewFileHasher Instantiates a new FileHasher object.
-func NewFileHasher() FileHasher {
-	return FileHasher{list.New()}
+// NewDb Instantiates a new Db object.
+func NewDb() Db {
+	return Db{list.New()}
 }
 
 // LoadCsv Loads fingerprints from the given CSV file.
-func (fh *FileHasher) LoadCsv(filename string) {
+func (fh *Db) LoadCsv(filename string) {
 
 	content := readFileContent(filename)
 	reader := csv.NewReader(bytes.NewReader(content))
@@ -51,7 +41,7 @@ func (fh *FileHasher) LoadCsv(filename string) {
 }
 
 // SaveCsv Exports fingerprints to the given CSV file.
-func (fh *FileHasher) SaveCsv(filename string) {
+func (fh *Db) SaveCsv(filename string) {
 
 	records := createStringArrayFromFingerprints(fh.Fingerprints)
 
@@ -70,7 +60,7 @@ func readFileContent(filename string) []byte {
 	return content
 }
 
-func (fh *FileHasher) addFingerprint(record []string, checksumBytes []byte) {
+func (fh *Db) addFingerprint(record []string, checksumBytes []byte) {
 
 	fp := new(Fingerprint)
 	fp.Filename = record[0]
@@ -79,6 +69,7 @@ func (fh *FileHasher) addFingerprint(record []string, checksumBytes []byte) {
 	fp.CreatedAt = record[3]
 	fp.Creator = record[4]
 	fp.Note = record[5]
+
 	fh.Fingerprints.PushFront(fp)
 }
 

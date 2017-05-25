@@ -1,7 +1,7 @@
 package bll
 
 import (
-	"checksum"
+	"dal"
 	"util"
 )
 
@@ -13,10 +13,11 @@ type Calculator struct {
 }
 
 // RecordChecksumsForDirectory Calculates and stores checksums for the files in the given directory.
-func (calculator *Calculator) RecordChecksumsForDirectory(hasher *checksum.FileHasher, algorithm string) {
+func (calculator *Calculator) RecordChecksumsForDirectory(db *dal.Db, algorithm string) {
 
 	files := util.ListDirectoryRecursively(calculator.InputDirectory)
-	fingerprints := checksum.CalculateChecksumsForFiles(calculator.InputDirectory, files, calculator.BasePath, algorithm)
-	hasher.Fingerprints = fingerprints
-	hasher.SaveCsv(calculator.OutputChecksums)
+	hasher := NewHasher(algorithm)
+	fingerprints := hasher.CalculateChecksumsForFiles(calculator.InputDirectory, files, calculator.BasePath)
+	db.Fingerprints = fingerprints
+	db.SaveCsv(calculator.OutputChecksums)
 }

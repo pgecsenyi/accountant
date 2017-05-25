@@ -2,7 +2,7 @@ package bll
 
 import (
 	"bufio"
-	"checksum"
+	"dal"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -31,53 +31,52 @@ func NewImporter(inputDirectory string, outputChecksums string) Importer {
 }
 
 // Convert Converts checksum data produced by third party utilities to CSV.
-func (importer *Importer) Convert(hasher *checksum.FileHasher) {
+func (importer *Importer) Convert(db *dal.Db) {
 
-	fpPrototype := new(checksum.Fingerprint)
+	fpPrototype := new(dal.Fingerprint)
 	fpPrototype.Note = ""
 
 	files := util.ListDirectoryRecursively(importer.InputDirectory)
 	for _, file := range files {
 		fullPath := path.Join(importer.InputDirectory, file)
 		setCreatedAtTime(fpPrototype, fullPath)
-		importer.loadDataFromFile(hasher, fullPath, fpPrototype)
+		importer.loadDataFromFile(db, fullPath, fpPrototype)
 	}
 
-	hasher.SaveCsv(importer.OutputChecksums)
+	db.SaveCsv(importer.OutputChecksums)
 }
 
-func setCreatedAtTime(fpPrototype *checksum.Fingerprint, filePath string) {
+func setCreatedAtTime(fpPrototype *dal.Fingerprint, filePath string) {
 
 	fileInfo, err := os.Stat(filePath)
 	util.CheckErrDontPanic(err, "Unable to get the file modification time for "+filePath+".")
 	fpPrototype.CreatedAt = fileInfo.ModTime().UTC().Format(time.RFC3339)
 }
 
-func (importer *Importer) loadDataFromFile(
-	hasher *checksum.FileHasher, filePath string, fpPrototype *checksum.Fingerprint) {
+func (importer *Importer) loadDataFromFile(db *dal.Db, filePath string, fpPrototype *dal.Fingerprint) {
 
 	extension := path.Ext(filePath)
 
-	if extension == checksum.CRC32EXT {
-		fpPrototype.Algorithm = checksum.CRC32
-		compilePattern(&importer.patternCrc32, checksum.PATTERNCRC32, checksum.CRC32LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternCrc32, ';')
-	} else if extension == checksum.MD5EXT {
-		fpPrototype.Algorithm = checksum.MD5
-		compilePattern(&importer.patternMd5, checksum.PATTERNCOMMON, checksum.MD5LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternMd5, '*')
-	} else if extension == checksum.SHA1EXT {
-		fpPrototype.Algorithm = checksum.SHA1
-		compilePattern(&importer.patternSha1, checksum.PATTERNCOMMON, checksum.SHA1LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha1, '*')
-	} else if extension == checksum.SHA256EXT {
-		fpPrototype.Algorithm = checksum.SHA256
-		compilePattern(&importer.patternSha256, checksum.PATTERNCOMMON, checksum.SHA256LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha256, '*')
-	} else if extension == checksum.SHA512EXT {
-		fpPrototype.Algorithm = checksum.SHA512
-		compilePattern(&importer.patternSha512, checksum.PATTERNCOMMON, checksum.SHA512LEN)
-		parseFile(hasher, fpPrototype, filePath, importer.patternSha512, '*')
+	if extension == dal.CRC32EXT {
+		fpPrototype.Algorithm = dal.CRC32
+		compilePattern(&importer.patternCrc32, dal.PATTERNCRC32, dal.CRC32LEN)
+		parseFile(db, fpPrototype, filePath, importer.patternCrc32, ';')
+	} else if extension == dal.MD5EXT {
+		fpPrototype.Algorithm = dal.MD5
+		compilePattern(&importer.patternMd5, dal.PATTERNCOMMON, dal.MD5LEN)
+		parseFile(db, fpPrototype, filePath, importer.patternMd5, '*')
+	} else if extension == dal.SHA1EXT {
+		fpPrototype.Algorithm = dal.SHA1
+		compilePattern(&importer.patternSha1, dal.PATTERNCOMMON, dal.SHA1LEN)
+		parseFile(db, fpPrototype, filePath, importer.patternSha1, '*')
+	} else if extension == dal.SHA256EXT {
+		fpPrototype.Algorithm = dal.SHA256
+		compilePattern(&importer.patternSha256, dal.PATTERNCOMMON, dal.SHA256LEN)
+		parseFile(db, fpPrototype, filePath, importer.patternSha256, '*')
+	} else if extension == dal.SHA512EXT {
+		fpPrototype.Algorithm = dal.SHA512
+		compilePattern(&importer.patternSha512, dal.PATTERNCOMMON, dal.SHA512LEN)
+		parseFile(db, fpPrototype, filePath, importer.patternSha512, '*')
 	}
 }
 
@@ -90,7 +89,7 @@ func compilePattern(re **regexp.Regexp, pattern string, length int) {
 }
 
 func parseFile(
-	hasher *checksum.FileHasher, fpPrototype *checksum.Fingerprint,
+	db *dal.Db, fpPrototype *dal.Fingerprint,
 	filePath string, pattern *regexp.Regexp, commentChar byte) int {
 
 	file, err := os.Open(filePath)
@@ -102,7 +101,7 @@ func parseFile(
 	numberOfInvalidLines := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if !parseLine(hasher, fpPrototype, scanner.Text(), pattern, commentChar, idxFilename, idxChecksum) {
+		if !parseLine(db, fpPrototype, scanner.Text(), pattern, commentChar, idxFilename, idxChecksum) {
 			numberOfInvalidLines++
 		}
 	}
@@ -134,7 +133,7 @@ func getFilenameChecksumIndices(indexNames []string) (int, int) {
 }
 
 func parseLine(
-	hasher *checksum.FileHasher, fpPrototype *checksum.Fingerprint,
+	db *dal.Db, fpPrototype *dal.Fingerprint,
 	line string, pattern *regexp.Regexp, commentChar byte, idxFilename int, idxChecksum int) bool {
 
 	// This line is a comment or whitespace.
@@ -157,14 +156,14 @@ func parseLine(
 	newPrototype := cloneFingerprintPrototype(fpPrototype)
 	newPrototype.Filename = matches[idxFilename]
 	newPrototype.Checksum = checksumBytes
-	hasher.Fingerprints.PushFront(newPrototype)
+	db.Fingerprints.PushFront(newPrototype)
 
 	return true
 }
 
-func cloneFingerprintPrototype(fpPrototype *checksum.Fingerprint) *checksum.Fingerprint {
+func cloneFingerprintPrototype(fpPrototype *dal.Fingerprint) *dal.Fingerprint {
 
-	clone := new(checksum.Fingerprint)
+	clone := new(dal.Fingerprint)
 	clone.Algorithm = fpPrototype.Algorithm
 	clone.CreatedAt = fpPrototype.CreatedAt
 

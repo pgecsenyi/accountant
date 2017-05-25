@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+// CheckIfFileExists Checks whether the given file exist or not.
+func CheckIfFileExists(path string) bool {
+
+	if stat, err := os.Stat(path); err == nil && !os.IsNotExist(err) && !stat.IsDir() {
+		return true
+	}
+
+	return false
+}
+
 // ListDirectory Lists the given directory (only the first level of the hierarchy).
 func ListDirectory(p string) []os.FileInfo {
 

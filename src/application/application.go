@@ -2,7 +2,7 @@ package application
 
 import (
 	"bll"
-	"checksum"
+	"dal"
 	"flag"
 	"log"
 	"os"
@@ -35,7 +35,7 @@ type configuration struct {
 // Initialize Initializes the application.
 func (app *Application) Initialize() {
 
-	defaultConfig := configuration{taskCalculate, checksum.SHA1, "", "", "", "", "", "", ""}
+	defaultConfig := configuration{taskCalculate, dal.SHA1, "", "", "", "", "", "", ""}
 	app.parseCommandLineArguments(defaultConfig)
 	app.verifyConfiguration()
 	app.execute()
@@ -113,27 +113,27 @@ func (app *Application) verifyConfiguration() {
 
 func (app *Application) execute() {
 
-	hasher := checksum.NewFileHasher()
+	db := dal.NewDb()
 	if app.config.task == taskCalculate {
 		calculator := bll.Calculator{app.config.inputDirectory, app.config.outputChecksum, app.config.basePath}
-		calculator.RecordChecksumsForDirectory(&hasher, app.config.algorithm)
+		calculator.RecordChecksumsForDirectory(&db, app.config.algorithm)
 	} else if app.config.task == taskCompare {
 		comparer := bll.Comparer{
 			app.config.inputDirectory, app.config.inputChecksum,
 			app.config.outputNames, app.config.outputChecksum,
 			app.config.basePath}
-		comparer.RecordNameChangesForDirectory(&hasher, app.config.algorithm)
+		comparer.RecordNameChangesForDirectory(&db, app.config.algorithm)
 	} else if app.config.task == taskExport {
 		exporter := bll.NewExporter(
 			app.config.inputChecksum, app.config.outputDirectory,
 			app.config.filter, app.config.basePath)
-		exporter.Convert(&hasher)
+		exporter.Convert(&db)
 	} else if app.config.task == taskImport {
 		importer := bll.NewImporter(app.config.inputDirectory, app.config.outputChecksum)
-		importer.Convert(&hasher)
+		importer.Convert(&db)
 	} else if app.config.task == taskVerify {
 		verifier := bll.NewVerifier(app.config.inputChecksum, app.config.basePath)
-		verifier.Verify(&hasher)
+		verifier.Verify(&db)
 	}
 }
 

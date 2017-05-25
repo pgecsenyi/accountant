@@ -1,8 +1,8 @@
 package bll
 
 import (
-	"checksum"
 	"container/list"
+	"dal"
 	"fmt"
 	"path"
 	"util"
@@ -22,23 +22,23 @@ func NewVerifier(inputChecksums string, basePath string) Verifier {
 	return Verifier{inputChecksums, basePath, 0, 0}
 }
 
-// VerifyRecords Verifies checksums in the given file.
-func (verifier *Verifier) Verify(hasher *checksum.FileHasher) {
+// Verify Verifies checksums in the given file.
+func (verifier *Verifier) Verify(db *dal.Db) {
 
-	hasher.LoadCsv(verifier.InputChecksums)
-	verifier.verifyEntries(hasher.Fingerprints)
-	verifier.printSummary(hasher.Fingerprints)
+	db.LoadCsv(verifier.InputChecksums)
+	verifier.verifyEntries(db.Fingerprints)
+	verifier.printSummary(db.Fingerprints)
 }
 
 func (verifier *Verifier) verifyEntries(fingerprints *list.List) {
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
-		fingerprint := element.Value.(*checksum.Fingerprint)
+		fingerprint := element.Value.(*dal.Fingerprint)
 		verifier.verifyEntry(fingerprint)
 	}
 }
 
-func (verifier *Verifier) verifyEntry(fingerprint *checksum.Fingerprint) {
+func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint) {
 
 	fullPath := path.Join(verifier.BasePath, fingerprint.Filename)
 
@@ -46,8 +46,9 @@ func (verifier *Verifier) verifyEntry(fingerprint *checksum.Fingerprint) {
 		fmt.Println(fmt.Sprintf("%s does not exist", fingerprint.Filename))
 		verifier.countMissing++
 	} else {
-		checksum := checksum.CalculateChecksumForFile(fullPath, fingerprint.Algorithm)
-		if !util.Compare(checksum, fingerprint.Checksum) {
+		hasher := NewHasher(fingerprint.Algorithm)
+		checksum := hasher.CalculateChecksumForFile(fullPath)
+		if !compareByteSlices(checksum, fingerprint.Checksum) {
 			fmt.Println(fmt.Sprintf("%s has an invalid checksum", fingerprint.Filename))
 			verifier.countInvalid++
 		}
@@ -63,4 +64,22 @@ func (verifier *Verifier) printSummary(fingerprints *list.List) {
 	fmt.Printf(
 		"Valid: %d/%d, missing: %d, invalid: %d.",
 		countValid, countAll, verifier.countMissing, verifier.countInvalid)
+}
+
+func compareByteSlices(slice1 []byte, slice2 []byte) bool {
+
+	if (slice1 == nil && slice2 != nil) || (slice1 != nil && slice2 == nil) {
+		return false
+	}
+	if len(slice1) != len(slice2) {
+		return false
+	}
+
+	for i := 0; i < len(slice1); i++ {
+		if slice1[i] != slice2[i] {
+			return false
+		}
+	}
+
+	return true
 }

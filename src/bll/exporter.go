@@ -1,8 +1,8 @@
 package bll
 
 import (
-	"checksum"
 	"container/list"
+	"dal"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -36,11 +36,11 @@ func NewExporter(inputChecksums string, outputDirectory string, filter string, b
 }
 
 // Convert Converts checksum data to formats that third party utilities understand.
-func (exporter *Exporter) Convert(hasher *checksum.FileHasher) {
+func (exporter *Exporter) Convert(db *dal.Db) {
 
-	hasher.LoadCsv(exporter.InputChecksums)
+	db.LoadCsv(exporter.InputChecksums)
 	defer exporter.closeFiles()
-	exporter.exportChecksums(hasher.Fingerprints)
+	exporter.exportChecksums(db.Fingerprints)
 }
 
 func (exporter *Exporter) closeFiles() {
@@ -66,31 +66,31 @@ func (exporter *Exporter) closeFiles() {
 func (exporter *Exporter) exportChecksums(fingerprints *list.List) {
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
-		meta := element.Value.(*checksum.Fingerprint)
-		if strings.Contains(meta.Filename, exporter.Filter) {
-			checksum := hex.EncodeToString(meta.Checksum)
-			fullPath := path.Join(exporter.BasePath, meta.Filename)
-			exporter.exportChecksum(fullPath, checksum, meta.Algorithm)
+		fingerprint := element.Value.(*dal.Fingerprint)
+		if strings.Contains(fingerprint.Filename, exporter.Filter) {
+			checksum := hex.EncodeToString(fingerprint.Checksum)
+			fullPath := path.Join(exporter.BasePath, fingerprint.Filename)
+			exporter.exportChecksum(fullPath, checksum, fingerprint.Algorithm)
 		}
 	}
 }
 
 func (exporter *Exporter) exportChecksum(filename string, hash string, algorithm string) {
 
-	if algorithm == checksum.CRC32 {
-		exporter.openOutputFile(&exporter.fileWriters.fCrc32, checksum.CRC32EXT)
+	if algorithm == dal.CRC32 {
+		exporter.openOutputFile(&exporter.fileWriters.fCrc32, dal.CRC32EXT)
 		exporter.fileWriters.fCrc32.WriteString(fmt.Sprintf("%s %s\n", filename, hash))
-	} else if algorithm == checksum.MD5 {
-		exporter.openOutputFile(&exporter.fileWriters.fMd5, checksum.MD5EXT)
+	} else if algorithm == dal.MD5 {
+		exporter.openOutputFile(&exporter.fileWriters.fMd5, dal.MD5EXT)
 		exporter.fileWriters.fMd5.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == checksum.SHA1 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha1, checksum.SHA1EXT)
+	} else if algorithm == dal.SHA1 {
+		exporter.openOutputFile(&exporter.fileWriters.fSha1, dal.SHA1EXT)
 		exporter.fileWriters.fSha1.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == checksum.SHA256 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha256, checksum.SHA256EXT)
+	} else if algorithm == dal.SHA256 {
+		exporter.openOutputFile(&exporter.fileWriters.fSha256, dal.SHA256EXT)
 		exporter.fileWriters.fSha256.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == checksum.SHA512 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha512, checksum.SHA512EXT)
+	} else if algorithm == dal.SHA512 {
+		exporter.openOutputFile(&exporter.fileWriters.fSha512, dal.SHA512EXT)
 		exporter.fileWriters.fSha512.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
 	}
 }

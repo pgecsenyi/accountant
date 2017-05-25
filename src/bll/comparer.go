@@ -1,8 +1,8 @@
 package bll
 
 import (
-	"checksum"
 	"container/list"
+	"dal"
 	"encoding/hex"
 	"log"
 	"os"
@@ -19,17 +19,18 @@ type Comparer struct {
 }
 
 // RecordNameChangesForDirectory Verifies and stores changes in the given directory based on the checksums calculated earlier.
-func (comparer *Comparer) RecordNameChangesForDirectory(hasher *checksum.FileHasher, algorithm string) {
+func (comparer *Comparer) RecordNameChangesForDirectory(db *dal.Db, algorithm string) {
 
-	hasher.LoadCsv(comparer.InputChecksums)
-	oldFingerprints := hasher.Fingerprints
+	db.LoadCsv(comparer.InputChecksums)
+	oldFingerprints := db.Fingerprints
 
+	hasher := NewHasher(algorithm)
 	files := util.ListDirectoryRecursively(comparer.InputDirectory)
-	newFingerprints := checksum.CalculateChecksumsForFiles(comparer.InputDirectory, files, comparer.BasePath, algorithm)
-	hasher.Fingerprints = newFingerprints
+	newFingerprints := hasher.CalculateChecksumsForFiles(comparer.InputDirectory, files, comparer.BasePath)
+	db.Fingerprints = newFingerprints
 
 	recordDifferences(oldFingerprints, newFingerprints, comparer.OutputNames)
-	hasher.SaveCsv(comparer.OutputChecksums)
+	db.SaveCsv(comparer.OutputChecksums)
 }
 
 func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
@@ -43,11 +44,11 @@ func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, o
 	compareFingerprints(cache, newFingerprints, f)
 }
 
-func buildFingerprintCache(fingerprints *list.List) map[string]*checksum.Fingerprint {
+func buildFingerprintCache(fingerprints *list.List) map[string]*dal.Fingerprint {
 
-	var cache = make(map[string]*checksum.Fingerprint)
+	var cache = make(map[string]*dal.Fingerprint)
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
-		fp := element.Value.(*checksum.Fingerprint)
+		fp := element.Value.(*dal.Fingerprint)
 		fpString := hex.EncodeToString(fp.Checksum)
 		cache[fpString] = fp
 	}
@@ -55,12 +56,12 @@ func buildFingerprintCache(fingerprints *list.List) map[string]*checksum.Fingerp
 	return cache
 }
 
-func compareFingerprints(oldFingerprints map[string]*checksum.Fingerprint, newFingerprints *list.List, output *os.File) {
+func compareFingerprints(oldFingerprints map[string]*dal.Fingerprint, newFingerprints *list.List, output *os.File) {
 
 	foundFingerprints := make(map[string]bool)
 
 	for element := newFingerprints.Front(); element != nil; element = element.Next() {
-		newFp := element.Value.(*checksum.Fingerprint)
+		newFp := element.Value.(*dal.Fingerprint)
 		newFpString := hex.EncodeToString(newFp.Checksum)
 		oldFp := oldFingerprints[newFpString]
 		if oldFp == nil {
@@ -84,7 +85,7 @@ func saveNameChange(oldName string, newName string, output *os.File) {
 	output.WriteString("    \r\n")
 }
 
-func printRemovedFiles(oldFingerprints map[string]*checksum.Fingerprint, foundFingerprints map[string]bool) {
+func printRemovedFiles(oldFingerprints map[string]*dal.Fingerprint, foundFingerprints map[string]bool) {
 
 	for hash, fingerprint := range oldFingerprints {
 		hasFound := foundFingerprints[hash]

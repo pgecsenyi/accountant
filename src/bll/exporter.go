@@ -65,14 +65,36 @@ func (exporter *Exporter) closeFiles() {
 
 func (exporter *Exporter) exportChecksums(fingerprints *list.List) {
 
+	filenameFilter, algFilter := exporter.getFilterParts()
+
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
-		if strings.Contains(fingerprint.Filename, exporter.Filter) {
+		if filterFingerprint(fingerprint, filenameFilter, algFilter) {
 			checksum := hex.EncodeToString(fingerprint.Checksum)
 			fullPath := path.Join(exporter.BasePath, fingerprint.Filename)
 			exporter.exportChecksum(fullPath, checksum, fingerprint.Algorithm)
 		}
 	}
+}
+
+func (exporter *Exporter) getFilterParts() (string, string) {
+
+	if exporter.Filter == "" {
+		return "", ""
+	}
+
+	separatorIndex := strings.Index(exporter.Filter, ":")
+	if separatorIndex == -1 {
+		return exporter.Filter, ""
+	}
+
+	return exporter.Filter[:separatorIndex], exporter.Filter[separatorIndex+1:]
+}
+
+func filterFingerprint(fingerprint *dal.Fingerprint, filenameFilter string, algFilter string) bool {
+
+	return (filenameFilter == "" || strings.Contains(fingerprint.Filename, filenameFilter)) &&
+		(algFilter == "" || fingerprint.Algorithm == algFilter)
 }
 
 func (exporter *Exporter) exportChecksum(filename string, hash string, algorithm string) {

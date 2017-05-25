@@ -25,7 +25,7 @@ func NewVerifier(inputChecksums string, basePath string) Verifier {
 // VerifyRecords Verifies checksums in the given file.
 func (verifier *Verifier) Verify(hasher *checksum.FileHasher) {
 
-	hasher.LoadFromCsv(verifier.InputChecksums)
+	hasher.LoadCsv(verifier.InputChecksums)
 	verifier.verifyEntries(hasher.Fingerprints)
 	verifier.printSummary(hasher.Fingerprints)
 }

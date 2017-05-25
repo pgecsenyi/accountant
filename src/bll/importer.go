@@ -43,7 +43,7 @@ func (importer *Importer) Convert(hasher *checksum.FileHasher) {
 		importer.loadDataFromFile(hasher, fullPath, fpPrototype)
 	}
 
-	hasher.ExportToCsv(importer.OutputChecksums)
+	hasher.SaveCsv(importer.OutputChecksums)
 }
 
 func setCreatedAtTime(fpPrototype *checksum.Fingerprint, filePath string) {

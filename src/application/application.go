@@ -113,16 +113,16 @@ func (app *Application) verifyConfiguration() {
 
 func (app *Application) execute() {
 
-	hasher := checksum.NewFileHasher(app.config.algorithm)
+	hasher := checksum.NewFileHasher()
 	if app.config.task == taskCalculate {
 		calculator := bll.Calculator{app.config.inputDirectory, app.config.outputChecksum, app.config.basePath}
-		calculator.RecordChecksumsForDirectory(&hasher)
+		calculator.RecordChecksumsForDirectory(&hasher, app.config.algorithm)
 	} else if app.config.task == taskCompare {
 		comparer := bll.Comparer{
 			app.config.inputDirectory, app.config.inputChecksum,
 			app.config.outputNames, app.config.outputChecksum,
 			app.config.basePath}
-		comparer.RecordNameChangesForDirectory(&hasher)
+		comparer.RecordNameChangesForDirectory(&hasher, app.config.algorithm)
 	} else if app.config.task == taskExport {
 		exporter := bll.NewExporter(
 			app.config.inputChecksum, app.config.outputDirectory,

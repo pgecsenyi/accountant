@@ -19,19 +19,17 @@ type Comparer struct {
 }
 
 // RecordNameChangesForDirectory Verifies and stores changes in the given directory based on the checksums calculated earlier.
-func (comparer *Comparer) RecordNameChangesForDirectory(hasher *checksum.FileHasher) {
+func (comparer *Comparer) RecordNameChangesForDirectory(hasher *checksum.FileHasher, algorithm string) {
 
-	hasher.LoadFromCsv(comparer.InputChecksums)
+	hasher.LoadCsv(comparer.InputChecksums)
 	oldFingerprints := hasher.Fingerprints
 
-	hasher.Reset()
-
 	files := util.ListDirectoryRecursively(comparer.InputDirectory)
-	hasher.CalculateChecksumsForFiles(comparer.InputDirectory, files, comparer.BasePath)
-	newFingerprints := hasher.Fingerprints
+	newFingerprints := checksum.CalculateChecksumsForFiles(comparer.InputDirectory, files, comparer.BasePath, algorithm)
+	hasher.Fingerprints = newFingerprints
 
 	recordDifferences(oldFingerprints, newFingerprints, comparer.OutputNames)
-	hasher.ExportToCsv(comparer.OutputChecksums)
+	hasher.SaveCsv(comparer.OutputChecksums)
 }
 
 func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {

@@ -38,7 +38,7 @@ func NewExporter(inputChecksums string, outputDirectory string, filter string, b
 // Convert Converts checksum data to formats that third party utilities understand.
 func (exporter *Exporter) Convert(hasher *checksum.FileHasher) {
 
-	hasher.LoadFromCsv(exporter.InputChecksums)
+	hasher.LoadCsv(exporter.InputChecksums)
 	defer exporter.closeFiles()
 	exporter.exportChecksums(hasher.Fingerprints)
 }

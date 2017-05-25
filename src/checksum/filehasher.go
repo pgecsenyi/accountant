@@ -8,16 +8,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
-	"runtime"
-	"time"
 	"util"
 )
 
 // FileHasher Logic for calculating checksums.
 type FileHasher struct {
 	Fingerprints *list.List
-	algorithm    string
 }
 
 // Fingerprint Stores the necessary data to identify a file and a bit more.
@@ -30,31 +26,13 @@ type Fingerprint struct {
 	Note      string
 }
 
-var currentTime = time.Now().Format(time.RFC3339)
-var runTimeVersion = runtime.Version()
-
 // NewFileHasher Instantiates a new FileHasher object.
-func NewFileHasher(algorithm string) FileHasher {
-	return FileHasher{list.New(), algorithm}
+func NewFileHasher() FileHasher {
+	return FileHasher{list.New()}
 }
 
-// CalculateChecksumsForFiles Calculates checksum for each file in the given list.
-func (fh *FileHasher) CalculateChecksumsForFiles(basePath string, files []string, prefixToRemove string) {
-
-	for _, file := range files {
-		fh.recordChecksumForFile(basePath, file, fh.algorithm, prefixToRemove)
-	}
-}
-
-// ExportToCsv Exports fingerprints to the given CSV file.
-func (fh *FileHasher) ExportToCsv(filename string) {
-
-	records := createStringArrayFromFingerprints(fh.Fingerprints)
-	writeChecksumsToCsvFile(records, filename)
-}
-
-// LoadFromCsv Loads fingerprints from the given CSV file.
-func (fh *FileHasher) LoadFromCsv(filename string) {
+// LoadCsv Loads fingerprints from the given CSV file.
+func (fh *FileHasher) LoadCsv(filename string) {
 
 	content := readFileContent(filename)
 	reader := csv.NewReader(bytes.NewReader(content))
@@ -72,26 +50,16 @@ func (fh *FileHasher) LoadFromCsv(filename string) {
 	}
 }
 
-// Reset Clears fingerprints.
-func (fh *FileHasher) Reset() {
+// SaveCsv Exports fingerprints to the given CSV file.
+func (fh *FileHasher) SaveCsv(filename string) {
 
-	(*fh).Fingerprints = list.New()
-}
+	records := createStringArrayFromFingerprints(fh.Fingerprints)
 
-func (fh *FileHasher) recordChecksumForFile(basePath string, filePath string, algorithm string, prefixToRemove string) {
+	file, err := os.Create(filename)
+	util.CheckErrDontPanic(err, "Cannot read file "+filename)
+	defer file.Close()
 
-	fullPath := path.Join(basePath, filePath)
-	checksum := CalculateChecksumForFile(fullPath, algorithm)
-	normalizedPath := util.NormalizePath(fullPath)[len(prefixToRemove):]
-
-	fp := new(Fingerprint)
-	fp.Filename = normalizedPath
-	fp.Checksum = checksum
-	fp.Algorithm = algorithm
-	fp.CreatedAt = currentTime
-	fp.Creator = runTimeVersion
-	fp.Note = ""
-	fh.Fingerprints.PushFront(fp)
+	writeCsv(records, file)
 }
 
 func readFileContent(filename string) []byte {
@@ -127,16 +95,6 @@ func createStringArrayFromFingerprints(fingerprints *list.List) [][]string {
 	}
 
 	return records
-}
-
-func writeChecksumsToCsvFile(records [][]string, filename string) {
-
-	file, err := os.Create(filename)
-	util.CheckErrDontPanic(err, "Cannot read file "+filename)
-
-	writeCsv(records, file)
-
-	defer file.Close()
 }
 
 func writeCsv(records [][]string, destination io.Writer) {

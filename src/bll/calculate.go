@@ -13,9 +13,10 @@ type Calculator struct {
 }
 
 // RecordChecksumsForDirectory Calculates and stores checksums for the files in the given directory.
-func (calculator *Calculator) RecordChecksumsForDirectory(hasher *checksum.FileHasher) {
+func (calculator *Calculator) RecordChecksumsForDirectory(hasher *checksum.FileHasher, algorithm string) {
 
 	files := util.ListDirectoryRecursively(calculator.InputDirectory)
-	hasher.CalculateChecksumsForFiles(calculator.InputDirectory, files, calculator.BasePath)
-	hasher.ExportToCsv(calculator.OutputChecksums)
+	fingerprints := checksum.CalculateChecksumsForFiles(calculator.InputDirectory, files, calculator.BasePath, algorithm)
+	hasher.Fingerprints = fingerprints
+	hasher.SaveCsv(calculator.OutputChecksums)
 }

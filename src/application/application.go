@@ -106,8 +106,11 @@ func (app *Application) verifyConfiguration() {
 	if app.config.inputChecksum != "" && !util.CheckIfFileExists(app.config.inputChecksum) {
 		log.Fatalln("Input file does not exist.")
 	}
-	if app.config.basePath == "" {
-		app.config.basePath = app.config.inputDirectory + "/"
+	if app.config.basePath == "" && app.config.inputDirectory != "" {
+		lastCharIndex := len(app.config.inputDirectory) - 1
+		if app.config.inputDirectory[lastCharIndex] != '/' {
+			app.config.basePath = app.config.inputDirectory + "/"
+		}
 	}
 }
 

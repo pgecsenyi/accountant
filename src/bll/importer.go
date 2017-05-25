@@ -154,7 +154,7 @@ func parseLine(
 	}
 
 	newPrototype := cloneFingerprintPrototype(fpPrototype)
-	newPrototype.Filename = matches[idxFilename]
+	newPrototype.Filename = util.NormalizePath(matches[idxFilename])
 	newPrototype.Checksum = checksumBytes
 	db.Fingerprints.PushFront(newPrototype)
 

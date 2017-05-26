@@ -5,6 +5,7 @@ import (
 	"dal"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"os"
 	"path"
 	"regexp"
@@ -90,7 +91,7 @@ func compilePattern(re **regexp.Regexp, pattern string, length int) {
 
 func parseFile(
 	db *dal.Db, fpPrototype *dal.Fingerprint,
-	filePath string, pattern *regexp.Regexp, commentChar byte) int {
+	filePath string, pattern *regexp.Regexp, commentChar byte) {
 
 	file, err := os.Open(filePath)
 	util.CheckErr(err, "Cannot open file "+filePath+".")
@@ -109,11 +110,9 @@ func parseFile(
 	util.CheckErr(scanner.Err(), "Error reading file "+filePath+".")
 
 	if numberOfInvalidLines != 0 {
-		fmt.Printf("There is/are %d invalid line(s) in %s.", numberOfInvalidLines, filePath)
-		fmt.Println()
+		message := fmt.Sprintf("There is/are %d invalid line(s) in %s.", numberOfInvalidLines, filePath)
+		log.Println(message)
 	}
-
-	return 0
 }
 
 func getFilenameChecksumIndices(indexNames []string) (int, int) {

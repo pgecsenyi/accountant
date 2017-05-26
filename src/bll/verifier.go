@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"dal"
 	"fmt"
+	"log"
 	"path"
 	"util"
 )
@@ -45,13 +46,13 @@ func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint) {
 	fullPath := path.Join(verifier.BasePath, fingerprint.Filename)
 
 	if !util.CheckIfFileExists(fullPath) {
-		fmt.Println(fmt.Sprintf("%s does not exist", fingerprint.Filename))
+		log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
 		verifier.countMissing++
 	} else {
 		hasher := NewHasher(fingerprint.Algorithm)
 		checksum := hasher.CalculateChecksumForFile(fullPath)
 		if !compareByteSlices(checksum, fingerprint.Checksum) {
-			fmt.Println(fmt.Sprintf("%s has an invalid checksum", fingerprint.Filename))
+			log.Println(fmt.Sprintf("Corrupt: %s", fingerprint.Filename))
 			verifier.countInvalid++
 		}
 	}
@@ -62,10 +63,9 @@ func (verifier *Verifier) printSummary(fingerprints *list.List) {
 	countAll := fingerprints.Len()
 	countValid := countAll - verifier.countMissing - verifier.countInvalid
 
-	fmt.Println()
-	fmt.Printf(
-		"Valid: %d/%d, missing: %d, invalid: %d.",
-		countValid, countAll, verifier.countMissing, verifier.countInvalid)
+	log.Println(fmt.Sprintf(
+		"Summary: %d/%d valid, %d missing, %d invalid.",
+		countValid, countAll, verifier.countMissing, verifier.countInvalid))
 }
 
 func compareByteSlices(slice1 []byte, slice2 []byte) bool {

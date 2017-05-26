@@ -26,46 +26,52 @@ func NewVerifier(inputChecksums string, basePath string) Verifier {
 }
 
 // Verify Verifies checksums in the given file.
-func (verifier *Verifier) Verify(db *dal.Db) {
+func (verifier *Verifier) Verify(db *dal.Db, verifyNamesOnly bool) {
 
 	db.LoadCsv(verifier.InputChecksums)
-	verifier.verifyEntries(db.Fingerprints)
-	verifier.printSummary(db.Fingerprints)
+	verifier.verifyEntries(db.Fingerprints, verifyNamesOnly)
+	verifier.printSummary(db.Fingerprints, verifyNamesOnly)
 }
 
-func (verifier *Verifier) verifyEntries(fingerprints *list.List) {
+func (verifier *Verifier) verifyEntries(fingerprints *list.List, verifyNamesOnly bool) {
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
-		verifier.verifyEntry(fingerprint)
+		verifier.verifyEntry(fingerprint, verifyNamesOnly)
 	}
 }
 
-func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint) {
+func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint, verifyNameOnly bool) {
 
 	fullPath := path.Join(verifier.BasePath, fingerprint.Filename)
 
 	if !util.CheckIfFileExists(fullPath) {
 		log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
 		verifier.countMissing++
-	} else {
+	} else if !verifyNameOnly {
 		hasher := NewHasher(fingerprint.Algorithm)
 		checksum := hasher.CalculateChecksumForFile(fullPath)
 		if !compareByteSlices(checksum, fingerprint.Checksum) {
-			log.Println(fmt.Sprintf("Corrupt: %s", fingerprint.Filename))
+			log.Println(fmt.Sprintf("Invalid: %s", fingerprint.Filename))
 			verifier.countInvalid++
 		}
 	}
 }
 
-func (verifier *Verifier) printSummary(fingerprints *list.List) {
+func (verifier *Verifier) printSummary(fingerprints *list.List, verifyNamesOnly bool) {
 
 	countAll := fingerprints.Len()
-	countValid := countAll - verifier.countMissing - verifier.countInvalid
+	countValid := countAll - verifier.countMissing
 
-	log.Println(fmt.Sprintf(
-		"Summary: %d/%d valid, %d missing, %d invalid.",
-		countValid, countAll, verifier.countMissing, verifier.countInvalid))
+	if verifyNamesOnly {
+		log.Println(fmt.Sprintf(
+			"Summary: %d/%d exist(s), %d missing.",
+			countValid, countAll, verifier.countMissing))
+	} else {
+		log.Println(fmt.Sprintf(
+			"Summary: %d/%d valid, %d missing, %d invalid.",
+			countValid, countAll, verifier.countMissing, verifier.countInvalid))
+	}
 }
 
 func compareByteSlices(slice1 []byte, slice2 []byte) bool {

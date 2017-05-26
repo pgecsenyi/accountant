@@ -30,6 +30,7 @@ The application is able to perform several different tasks (determined by the `-
   * `-task verify`: verifies the files listed in the input file.
     * `-inchk`: the path of the file containing checksums.
     * `-bp`: the base path for each entry listed in the input. Optional.
+    * `-namesonly`: if set to true `true`, only paths will be examined, checking whether they exist or not, otherwise checksums will be also verified. Optional, the default value is `false`.
 
 ## Development Environment
 

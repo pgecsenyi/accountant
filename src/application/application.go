@@ -71,7 +71,7 @@ func (app *Application) parseCommandLineArguments(defaultConfig configuration) {
 	basePath := flag.String(
 		"bp",
 		defaultConfig.basePath,
-		"The first part of the path that will not be stored in the output. By default it will be set to source.")
+		"The first part of the path that will not be stored in the output.")
 	outputDirectory := flag.String(
 		"outdir",
 		defaultConfig.outputDirectory,
@@ -105,12 +105,6 @@ func (app *Application) verifyConfiguration() {
 	}
 	if app.config.inputChecksum != "" && !util.CheckIfFileExists(app.config.inputChecksum) {
 		log.Fatalln("Input file does not exist.")
-	}
-	if app.config.basePath == "" && app.config.inputDirectory != "" {
-		lastCharIndex := len(app.config.inputDirectory) - 1
-		if app.config.inputDirectory[lastCharIndex] != '/' {
-			app.config.basePath = app.config.inputDirectory + "/"
-		}
 	}
 }
 

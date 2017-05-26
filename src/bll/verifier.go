@@ -19,6 +19,8 @@ type Verifier struct {
 // NewVerifier Instantiates a new Verifier object.
 func NewVerifier(inputChecksums string, basePath string) Verifier {
 
+	basePath = util.NormalizePath(basePath)
+
 	return Verifier{inputChecksums, basePath, 0, 0}
 }
 

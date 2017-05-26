@@ -52,6 +52,25 @@ func NormalizePath(p string) string {
 	return p
 }
 
+// TrimPath Removes the given basePath from fullPath if appropriate.
+func TrimPath(fullPath string, basePath string) string {
+
+	normalizedFullPath := NormalizePath(fullPath)
+	normalizedBasePath := NormalizePath(basePath)
+
+	if len(normalizedFullPath) < len(normalizedBasePath) {
+		return normalizedFullPath
+	}
+
+	nBasePathLen := len(normalizedBasePath)
+
+	if normalizedFullPath[:nBasePathLen] == normalizedBasePath {
+		return normalizedFullPath[nBasePathLen:]
+	}
+
+	return fullPath
+}
+
 func listDirectoryRecursively(p string) *list.List {
 
 	result := list.New()

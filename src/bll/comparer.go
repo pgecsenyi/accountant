@@ -26,11 +26,17 @@ func (comparer *Comparer) RecordNameChangesForDirectory(db *dal.Db, algorithm st
 
 	hasher := NewHasher(algorithm)
 	files := util.ListDirectoryRecursively(comparer.InputDirectory)
-	newFingerprints := hasher.CalculateChecksumsForFiles(comparer.InputDirectory, files, comparer.BasePath)
+	effectiveBasePath := comparer.getEffectiveBasePath()
+	newFingerprints := hasher.CalculateChecksumsForFiles(comparer.InputDirectory, effectiveBasePath, files)
 	db.Fingerprints = newFingerprints
 
 	recordDifferences(oldFingerprints, newFingerprints, comparer.OutputNames)
 	db.SaveCsv(comparer.OutputChecksums)
+}
+
+func (comparer *Comparer) getEffectiveBasePath() string {
+
+	return util.TrimPath(comparer.InputDirectory, comparer.BasePath)
 }
 
 func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {

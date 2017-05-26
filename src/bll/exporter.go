@@ -31,7 +31,9 @@ type fileHandlers struct {
 // NewExporter Instantiates a new Exporter object.
 func NewExporter(inputChecksums string, outputDirectory string, filter string, basePath string) Exporter {
 
+	basePath = util.NormalizePath(basePath)
 	fileHandlers := fileHandlers{nil, nil, nil, nil, nil}
+
 	return Exporter{inputChecksums, outputDirectory, filter, basePath, fileHandlers}
 }
 

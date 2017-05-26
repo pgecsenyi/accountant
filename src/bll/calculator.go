@@ -17,7 +17,13 @@ func (calculator *Calculator) RecordChecksumsForDirectory(db *dal.Db, algorithm 
 
 	files := util.ListDirectoryRecursively(calculator.InputDirectory)
 	hasher := NewHasher(algorithm)
-	fingerprints := hasher.CalculateChecksumsForFiles(calculator.InputDirectory, files, calculator.BasePath)
+	effectiveBasePath := calculator.getEffectiveBasePath()
+	fingerprints := hasher.CalculateChecksumsForFiles(calculator.InputDirectory, effectiveBasePath, files)
 	db.Fingerprints = fingerprints
 	db.SaveCsv(calculator.OutputChecksums)
+}
+
+func (calculator *Calculator) getEffectiveBasePath() string {
+
+	return util.TrimPath(calculator.InputDirectory, calculator.BasePath)
 }

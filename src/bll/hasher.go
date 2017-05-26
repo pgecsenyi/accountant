@@ -30,6 +30,7 @@ type Hasher struct {
 func NewHasher(algorithm string) Hasher {
 
 	hashFunc := getHashFunc(algorithm)
+
 	return Hasher{algorithm, hashFunc}
 }
 
@@ -48,27 +49,24 @@ func (hasher *Hasher) CalculateChecksumForFile(filename string) []byte {
 }
 
 // CalculateChecksumsForFiles Calculates checksum for each file in the given list.
-func (hasher *Hasher) CalculateChecksumsForFiles(basePath string, files []string, prefixToRemove string) *list.List {
+func (hasher *Hasher) CalculateChecksumsForFiles(basePath string, effectiveBasePath string, files []string) *list.List {
 
 	fingerprints := list.New()
 	for _, file := range files {
-		hasher.recordChecksumForFile(basePath, file, prefixToRemove, fingerprints)
+		hasher.recordChecksumForFile(basePath, effectiveBasePath, file, fingerprints)
 	}
 
 	return fingerprints
 }
 
 func (hasher *Hasher) recordChecksumForFile(
-	basePath string, filePath string,
-	prefixToRemove string,
-	fingerprints *list.List) {
+	basePath string, effectiveBasePath string, filePath string, fingerprints *list.List) {
 
 	fullPath := path.Join(basePath, filePath)
 	checksum := hasher.CalculateChecksumForFile(fullPath)
-	normalizedPath := util.NormalizePath(fullPath)[len(prefixToRemove):]
 
 	fp := new(dal.Fingerprint)
-	fp.Filename = normalizedPath
+	fp.Filename = util.NormalizePath(path.Join(effectiveBasePath, filePath))
 	fp.Checksum = checksum
 	fp.Algorithm = hasher.algorithm
 	fp.CreatedAt = currentTime

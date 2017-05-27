@@ -17,7 +17,8 @@ const taskVerify = "verify"
 
 // Application Contains main application logic.
 type Application struct {
-	config configuration
+	config  configuration
+	logFile *os.File
 }
 
 type configuration struct {
@@ -31,15 +32,45 @@ type configuration struct {
 	basePath        string
 	filter          string
 	verifyNamesOnly bool
+	logPath         string
 }
 
 // Initialize Initializes the application.
 func (app *Application) Initialize() {
 
-	defaultConfig := configuration{taskCalculate, dal.SHA1, "", "", "", "", "", "", "", false}
+	defaultConfig := configuration{taskCalculate, dal.SHA1, "", "", "", "", "", "", "", false, ""}
 	app.parseCommandLineArguments(defaultConfig)
 	app.verifyConfiguration()
-	app.execute()
+}
+
+// Execute Executes the application.
+func (app *Application) Execute() {
+
+	app.initializeLog()
+	defer app.cleanUp()
+
+	db := dal.NewDb()
+	if app.config.task == taskCalculate {
+		calculator := bll.Calculator{app.config.inputDirectory, app.config.outputChecksum, app.config.basePath}
+		calculator.RecordChecksumsForDirectory(&db, app.config.algorithm)
+	} else if app.config.task == taskCompare {
+		comparer := bll.Comparer{
+			app.config.inputDirectory, app.config.inputChecksum,
+			app.config.outputNames, app.config.outputChecksum,
+			app.config.basePath}
+		comparer.RecordNameChangesForDirectory(&db, app.config.algorithm)
+	} else if app.config.task == taskExport {
+		exporter := bll.NewExporter(
+			app.config.inputChecksum, app.config.outputDirectory,
+			app.config.filter, app.config.basePath)
+		exporter.Convert(&db)
+	} else if app.config.task == taskImport {
+		importer := bll.NewImporter(app.config.inputDirectory, app.config.outputChecksum)
+		importer.Convert(&db)
+	} else if app.config.task == taskVerify {
+		verifier := bll.NewVerifier(app.config.inputChecksum, app.config.basePath)
+		verifier.Verify(&db, app.config.verifyNamesOnly)
+	}
 }
 
 func (app *Application) parseCommandLineArguments(defaultConfig configuration) {
@@ -59,6 +90,10 @@ func (app *Application) parseCommandLineArguments(defaultConfig configuration) {
 		defaultConfig.inputDirectory,
 		"The source directory for which the checksums will be calculated (or will be compared). Or the directory"+
 			" containing the files to import.")
+	logPath := flag.String(
+		"log",
+		defaultConfig.logPath,
+		"Path of the log file. Optional, by default the program will print log messages to the standard error output.")
 	outputChecksum := flag.String(
 		"outchk",
 		defaultConfig.outputChecksum,
@@ -90,7 +125,7 @@ func (app *Application) parseCommandLineArguments(defaultConfig configuration) {
 		*task, *algorithm,
 		*inputChecksum, *inputDirectory,
 		*outputChecksum, *outputDirectory, *outputNames,
-		*basePath, *filter, *verifyNamesOnly}
+		*basePath, *filter, *verifyNamesOnly, *logPath}
 }
 
 func (app *Application) verifyConfiguration() {
@@ -114,29 +149,25 @@ func (app *Application) verifyConfiguration() {
 	}
 }
 
-func (app *Application) execute() {
+func (app *Application) initializeLog() {
 
-	db := dal.NewDb()
-	if app.config.task == taskCalculate {
-		calculator := bll.Calculator{app.config.inputDirectory, app.config.outputChecksum, app.config.basePath}
-		calculator.RecordChecksumsForDirectory(&db, app.config.algorithm)
-	} else if app.config.task == taskCompare {
-		comparer := bll.Comparer{
-			app.config.inputDirectory, app.config.inputChecksum,
-			app.config.outputNames, app.config.outputChecksum,
-			app.config.basePath}
-		comparer.RecordNameChangesForDirectory(&db, app.config.algorithm)
-	} else if app.config.task == taskExport {
-		exporter := bll.NewExporter(
-			app.config.inputChecksum, app.config.outputDirectory,
-			app.config.filter, app.config.basePath)
-		exporter.Convert(&db)
-	} else if app.config.task == taskImport {
-		importer := bll.NewImporter(app.config.inputDirectory, app.config.outputChecksum)
-		importer.Convert(&db)
-	} else if app.config.task == taskVerify {
-		verifier := bll.NewVerifier(app.config.inputChecksum, app.config.basePath)
-		verifier.Verify(&db, app.config.verifyNamesOnly)
+	if app.config.logPath == "" {
+		return
+	}
+
+	file, err := os.OpenFile(app.config.logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		app.logFile = nil
+	}
+
+	app.logFile = file
+	log.SetOutput(app.logFile)
+}
+
+func (app *Application) cleanUp() {
+
+	if app.logFile != nil {
+		app.logFile.Close()
 	}
 }
 

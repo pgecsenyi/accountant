@@ -6,4 +6,5 @@ func main() {
 
 	app := &application.Application{}
 	app.Initialize()
+	app.Execute()
 }

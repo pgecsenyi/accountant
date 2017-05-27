@@ -71,7 +71,7 @@ func compareFingerprints(oldFingerprints map[string]*dal.Fingerprint, newFingerp
 		newFpString := hex.EncodeToString(newFp.Checksum)
 		oldFp := oldFingerprints[newFpString]
 		if oldFp == nil {
-			log.Println("New file: " + newFp.Filename + ".")
+			log.Println("New: " + newFp.Filename + ".")
 		} else {
 			saveNameChange(oldFp.Filename, newFp.Filename, output)
 			newFp.CreatedAt = oldFp.CreatedAt
@@ -96,7 +96,7 @@ func printRemovedFiles(oldFingerprints map[string]*dal.Fingerprint, foundFingerp
 	for hash, fingerprint := range oldFingerprints {
 		hasFound := foundFingerprints[hash]
 		if !hasFound {
-			log.Println("Missing file: " + fingerprint.Filename)
+			log.Println("Missing: " + fingerprint.Filename)
 		}
 	}
 }

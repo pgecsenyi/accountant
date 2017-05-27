@@ -9,47 +9,45 @@ import (
 
 // Calculator Stores settings related to checksum calculation.
 type Calculator struct {
+	Db                dal.Database
 	InputDirectory    string
-	OutputChecksums   string
 	BasePath          string
-	InputChecksums    string
 	hasher            Hasher
 	effectiveBasePath string
 }
 
 // NewCalculator Instantiates a new Calculator object.
-func NewCalculator(
-	inputDirectory string, algorithm string, outputChecksums string, basePath string, inputChecksums string) Calculator {
+func NewCalculator(db dal.Database, inputDirectory string, algorithm string, basePath string) Calculator {
 
 	hasher := NewHasher(algorithm)
 	effectiveBasePath := util.TrimPath(inputDirectory, basePath)
 
-	return Calculator{inputDirectory, outputChecksums, basePath, inputChecksums, hasher, effectiveBasePath}
+	return Calculator{db, inputDirectory, basePath, hasher, effectiveBasePath}
 }
 
 // Calculate Calculates and stores checksums for the files in the given directory.
-func (calculator *Calculator) Calculate(db *dal.Db) {
+func (calculator *Calculator) Calculate(missingOnly bool) {
 
 	files := util.ListDirectoryRecursively(calculator.InputDirectory)
-	fingerprints := calculator.calculateFingerprints(db, files)
+	fingerprints := calculator.calculateFingerprints(files, missingOnly)
 
-	db.Fingerprints = fingerprints
-	db.SaveCsv(calculator.OutputChecksums)
+	calculator.Db.SetFingerprints(fingerprints)
+	calculator.Db.Save()
 }
 
-func (calculator *Calculator) calculateFingerprints(db *dal.Db, files []string) *list.List {
+func (calculator *Calculator) calculateFingerprints(files []string, missingOnly bool) *list.List {
 
-	if calculator.InputChecksums == "" {
-		return calculator.hasher.CalculateFingerprints(calculator.InputDirectory, calculator.effectiveBasePath, files)
+	if missingOnly {
+		return calculator.calculateFingerprintsForMissingFiles(files)
 	}
 
-	return calculator.calculateFingerprintsForMissingFiles(db, files)
+	return calculator.hasher.CalculateFingerprints(calculator.InputDirectory, calculator.effectiveBasePath, files)
 }
 
-func (calculator *Calculator) calculateFingerprintsForMissingFiles(db *dal.Db, files []string) *list.List {
+func (calculator *Calculator) calculateFingerprintsForMissingFiles(files []string) *list.List {
 
 	fingerprints := list.New()
-	etm := calculator.loadMissingNames(db)
+	etm := calculator.loadMissingNames()
 
 	for _, file := range files {
 		calculator.addFingerprintIfFileIsMissing(file, etm, fingerprints)
@@ -58,10 +56,10 @@ func (calculator *Calculator) calculateFingerprintsForMissingFiles(db *dal.Db, f
 	return fingerprints
 }
 
-func (calculator *Calculator) loadMissingNames(db *dal.Db) *effectiveTextMemory {
+func (calculator *Calculator) loadMissingNames() *effectiveTextMemory {
 
 	etm := newEffectiveTextMemory()
-	db.LoadNamesFromCsv(calculator.InputChecksums, etm)
+	calculator.Db.LoadNames(etm)
 	etm.ClearCache()
 
 	return etm

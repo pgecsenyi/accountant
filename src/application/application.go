@@ -49,30 +49,24 @@ func (app *Application) Execute() {
 	app.initializeLog()
 	defer app.cleanUp()
 
-	db := dal.NewDb()
+	conf := app.config
+	db := dal.NewCsvDatabase(conf.inputChecksum, conf.outputChecksum)
+
 	if app.config.task == taskCalculate {
-		calculator := bll.NewCalculator(
-			app.config.inputDirectory, app.config.algorithm,
-			app.config.outputChecksum, app.config.basePath,
-			app.config.inputChecksum)
-		calculator.Calculate(&db)
+		calculator := bll.NewCalculator(db, conf.inputDirectory, conf.algorithm, conf.basePath)
+		calculator.Calculate(conf.missingOnly)
 	} else if app.config.task == taskCompare {
-		comparer := bll.Comparer{
-			app.config.inputDirectory, app.config.inputChecksum,
-			app.config.outputNames, app.config.outputChecksum,
-			app.config.basePath}
-		comparer.Compare(&db, app.config.algorithm)
+		comparer := bll.Comparer{db, conf.inputDirectory, conf.outputNames, app.config.basePath}
+		comparer.Compare(app.config.algorithm)
 	} else if app.config.task == taskExport {
-		exporter := bll.NewExporter(
-			app.config.inputChecksum, app.config.outputDirectory,
-			app.config.filter, app.config.basePath)
-		exporter.Convert(&db)
+		exporter := bll.NewExporter(db, conf.outputDirectory, conf.filter, conf.basePath)
+		exporter.Convert()
 	} else if app.config.task == taskImport {
-		importer := bll.NewImporter(app.config.inputDirectory, app.config.outputChecksum)
-		importer.Convert(&db)
+		importer := bll.NewImporter(db, conf.inputDirectory, conf.outputChecksum)
+		importer.Convert()
 	} else if app.config.task == taskVerify {
-		verifier := bll.NewVerifier(app.config.inputChecksum, app.config.basePath)
-		verifier.Verify(&db, app.config.missingOnly)
+		verifier := bll.NewVerifier(db, conf.inputChecksum, conf.basePath)
+		verifier.Verify(conf.missingOnly)
 	}
 }
 

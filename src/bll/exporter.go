@@ -1,7 +1,6 @@
 package bll
 
 import (
-	"container/list"
 	"dal"
 	"encoding/hex"
 	"fmt"
@@ -13,7 +12,7 @@ import (
 
 // Exporter Exports checksums from CSV.
 type Exporter struct {
-	InputChecksums  string
+	Db              dal.Database
 	OutputDirectory string
 	Filter          string
 	BasePath        string
@@ -29,20 +28,20 @@ type fileHandlers struct {
 }
 
 // NewExporter Instantiates a new Exporter object.
-func NewExporter(inputChecksums string, outputDirectory string, filter string, basePath string) Exporter {
+func NewExporter(db dal.Database, outputDirectory string, filter string, basePath string) Exporter {
 
 	basePath = util.NormalizePath(basePath)
 	fileHandlers := fileHandlers{nil, nil, nil, nil, nil}
 
-	return Exporter{inputChecksums, outputDirectory, filter, basePath, fileHandlers}
+	return Exporter{db, outputDirectory, filter, basePath, fileHandlers}
 }
 
 // Convert Converts checksum data to formats that third party utilities understand.
-func (exporter *Exporter) Convert(db *dal.Db) {
+func (exporter *Exporter) Convert() {
 
-	db.LoadCsv(exporter.InputChecksums)
+	exporter.Db.Load()
 	defer exporter.closeFiles()
-	exporter.exportChecksums(db.Fingerprints)
+	exporter.exportChecksums()
 }
 
 func (exporter *Exporter) closeFiles() {
@@ -65,8 +64,9 @@ func (exporter *Exporter) closeFiles() {
 	}
 }
 
-func (exporter *Exporter) exportChecksums(fingerprints *list.List) {
+func (exporter *Exporter) exportChecksums() {
 
+	fingerprints := exporter.Db.GetFingerprints()
 	filenameFilter, algFilter := exporter.getFilterParts()
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {

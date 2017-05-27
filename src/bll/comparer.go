@@ -11,34 +11,33 @@ import (
 
 // Comparer Stores settings related to comparison.
 type Comparer struct {
-	InputDirectory  string
-	InputChecksums  string
-	OutputNames     string
-	OutputChecksums string
-	BasePath        string
+	Db             dal.Database
+	InputDirectory string
+	OutputNames    string
+	BasePath       string
 }
 
 // Compare Verifies and stores changes in the given directory based on the checksums calculated earlier.
-func (comparer *Comparer) Compare(db *dal.Db, algorithm string) {
+func (comparer *Comparer) Compare(algorithm string) {
 
-	oldFingerprints := comparer.loadOldFingerprints(db)
-	newFingerprints := comparer.calculateNewFingerprints(db, algorithm)
+	oldFingerprints := comparer.loadOldFingerprints()
+	newFingerprints := comparer.calculateNewFingerprints(algorithm)
 
-	db.Fingerprints = newFingerprints
-	db.SaveCsv(comparer.OutputChecksums)
+	comparer.Db.SetFingerprints(newFingerprints)
+	comparer.Db.Save()
 
 	compareAndSaveResults(oldFingerprints, newFingerprints, comparer.OutputNames)
 }
 
-func (comparer *Comparer) loadOldFingerprints(db *dal.Db) *list.List {
+func (comparer *Comparer) loadOldFingerprints() *list.List {
 
-	db.LoadCsv(comparer.InputChecksums)
-	oldFingerprints := db.Fingerprints
+	comparer.Db.Load()
+	oldFingerprints := comparer.Db.GetFingerprints()
 
 	return oldFingerprints
 }
 
-func (comparer *Comparer) calculateNewFingerprints(db *dal.Db, algorithm string) *list.List {
+func (comparer *Comparer) calculateNewFingerprints(algorithm string) *list.List {
 
 	hasher := NewHasher(algorithm)
 	effectiveBasePath := comparer.getEffectiveBasePath()

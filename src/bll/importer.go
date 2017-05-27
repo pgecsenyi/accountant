@@ -16,6 +16,7 @@ import (
 
 // Importer Stores settings related to import.
 type Importer struct {
+	Db               dal.Database
 	InputDirectory   string
 	OutputChecksums  string
 	patterns         importEntryPatterns
@@ -31,26 +32,26 @@ type importEntryPatterns struct {
 }
 
 // NewImporter Instantiates a new Importer object.
-func NewImporter(inputDirectory string, outputChecksums string) Importer {
+func NewImporter(db dal.Database, inputDirectory string, outputChecksums string) Importer {
 
 	patterns := importEntryPatterns{nil, nil, nil, nil, nil}
 	fingerprintProto := new(dal.Fingerprint)
 
-	return Importer{inputDirectory, outputChecksums, patterns, fingerprintProto}
+	return Importer{db, inputDirectory, outputChecksums, patterns, fingerprintProto}
 }
 
 // Convert Converts checksum data produced by third party utilities to CSV.
-func (importer *Importer) Convert(db *dal.Db) {
+func (importer *Importer) Convert() {
 
 	files := util.ListDirectoryRecursively(importer.InputDirectory)
 
 	for _, file := range files {
 		fullPath := path.Join(importer.InputDirectory, file)
 		importer.updateProtoTime(fullPath)
-		importer.loadDataFromFile(db, fullPath)
+		importer.loadDataFromFile(fullPath)
 	}
 
-	db.SaveCsv(importer.OutputChecksums)
+	importer.Db.Save()
 }
 
 func (importer *Importer) updateProtoTime(filePath string) {
@@ -60,34 +61,34 @@ func (importer *Importer) updateProtoTime(filePath string) {
 	importer.fingerprintProto.CreatedAt = fileInfo.ModTime().UTC().Format(time.RFC3339)
 }
 
-func (importer *Importer) loadDataFromFile(db *dal.Db, filePath string) {
+func (importer *Importer) loadDataFromFile(filePath string) {
 
 	extension := path.Ext(filePath)
 
 	if extension == dal.CRC32EXT {
 		importer.fingerprintProto.Algorithm = dal.CRC32
 		compilePattern(&importer.patterns.patternCrc32, dal.PATTERNCRC32, dal.CRC32LEN)
-		importer.parseFile(db, filePath, importer.patterns.patternCrc32, ';')
+		importer.parseFile(filePath, importer.patterns.patternCrc32, ';')
 	} else if extension == dal.MD5EXT {
 		importer.fingerprintProto.Algorithm = dal.MD5
 		compilePattern(&importer.patterns.patternMd5, dal.PATTERNCOMMON, dal.MD5LEN)
-		importer.parseFile(db, filePath, importer.patterns.patternMd5, '*')
+		importer.parseFile(filePath, importer.patterns.patternMd5, '*')
 	} else if extension == dal.SHA1EXT {
 		importer.fingerprintProto.Algorithm = dal.SHA1
 		compilePattern(&importer.patterns.patternSha1, dal.PATTERNCOMMON, dal.SHA1LEN)
-		importer.parseFile(db, filePath, importer.patterns.patternSha1, '*')
+		importer.parseFile(filePath, importer.patterns.patternSha1, '*')
 	} else if extension == dal.SHA256EXT {
 		importer.fingerprintProto.Algorithm = dal.SHA256
 		compilePattern(&importer.patterns.patternSha256, dal.PATTERNCOMMON, dal.SHA256LEN)
-		importer.parseFile(db, filePath, importer.patterns.patternSha256, '*')
+		importer.parseFile(filePath, importer.patterns.patternSha256, '*')
 	} else if extension == dal.SHA512EXT {
 		importer.fingerprintProto.Algorithm = dal.SHA512
 		compilePattern(&importer.patterns.patternSha512, dal.PATTERNCOMMON, dal.SHA512LEN)
-		importer.parseFile(db, filePath, importer.patterns.patternSha512, '*')
+		importer.parseFile(filePath, importer.patterns.patternSha512, '*')
 	}
 }
 
-func (importer *Importer) parseFile(db *dal.Db, filePath string, pattern *regexp.Regexp, commentChar byte) {
+func (importer *Importer) parseFile(filePath string, pattern *regexp.Regexp, commentChar byte) {
 
 	file, err := os.Open(filePath)
 	util.CheckErr(err, "Cannot open file "+filePath+".")
@@ -98,7 +99,7 @@ func (importer *Importer) parseFile(db *dal.Db, filePath string, pattern *regexp
 	numberOfInvalidLines := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		if !importer.parseLine(db, scanner.Text(), pattern, commentChar, idxFilename, idxChecksum) {
+		if !importer.parseLine(scanner.Text(), pattern, commentChar, idxFilename, idxChecksum) {
 			numberOfInvalidLines++
 		}
 	}
@@ -112,7 +113,7 @@ func (importer *Importer) parseFile(db *dal.Db, filePath string, pattern *regexp
 }
 
 func (importer *Importer) parseLine(
-	db *dal.Db, line string,
+	line string,
 	pattern *regexp.Regexp, commentChar byte,
 	idxFilename int, idxChecksum int) bool {
 
@@ -128,14 +129,14 @@ func (importer *Importer) parseLine(
 	}
 
 	// Add fingerprint to the database.
-	if !importer.addEntry(db, matches[idxFilename], matches[idxChecksum]) {
+	if !importer.addEntry(matches[idxFilename], matches[idxChecksum]) {
 		return false
 	}
 
 	return true
 }
 
-func (importer *Importer) addEntry(db *dal.Db, file string, checksum string) bool {
+func (importer *Importer) addEntry(file string, checksum string) bool {
 
 	checksumBytes, err := hex.DecodeString(checksum)
 	if err != nil {
@@ -143,7 +144,7 @@ func (importer *Importer) addEntry(db *dal.Db, file string, checksum string) boo
 	}
 
 	fingerprint := importer.cloneFingerprintProto(file, checksumBytes)
-	db.Fingerprints.PushFront(fingerprint)
+	importer.Db.AddFingerprint(fingerprint)
 
 	return true
 }

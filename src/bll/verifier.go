@@ -1,7 +1,6 @@
 package bll
 
 import (
-	"container/list"
 	"dal"
 	"fmt"
 	"log"
@@ -11,6 +10,7 @@ import (
 
 // Verifier Stores settings related to verification.
 type Verifier struct {
+	Db             dal.Database
 	InputChecksums string
 	BasePath       string
 	countInvalid   int
@@ -18,22 +18,24 @@ type Verifier struct {
 }
 
 // NewVerifier Instantiates a new Verifier object.
-func NewVerifier(inputChecksums string, basePath string) Verifier {
+func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifier {
 
 	basePath = util.NormalizePath(basePath)
 
-	return Verifier{inputChecksums, basePath, 0, 0}
+	return Verifier{db, inputChecksums, basePath, 0, 0}
 }
 
 // Verify Verifies checksums in the given file.
-func (verifier *Verifier) Verify(db *dal.Db, verifyNamesOnly bool) {
+func (verifier *Verifier) Verify(verifyNamesOnly bool) {
 
-	db.LoadCsv(verifier.InputChecksums)
-	verifier.verifyEntries(db.Fingerprints, verifyNamesOnly)
-	verifier.printSummary(db.Fingerprints, verifyNamesOnly)
+	verifier.Db.Load()
+	verifier.verifyEntries(verifyNamesOnly)
+	verifier.printSummary(verifyNamesOnly)
 }
 
-func (verifier *Verifier) verifyEntries(fingerprints *list.List, verifyNamesOnly bool) {
+func (verifier *Verifier) verifyEntries(verifyNamesOnly bool) {
+
+	fingerprints := verifier.Db.GetFingerprints()
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
@@ -64,9 +66,9 @@ func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath 
 	}
 }
 
-func (verifier *Verifier) printSummary(fingerprints *list.List, verifyNamesOnly bool) {
+func (verifier *Verifier) printSummary(verifyNamesOnly bool) {
 
-	countAll := fingerprints.Len()
+	countAll := verifier.Db.GetFingerprints().Len()
 	countValid := countAll - verifier.countMissing
 
 	if verifyNamesOnly {

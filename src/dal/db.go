@@ -40,6 +40,22 @@ func (fh *Db) LoadCsv(filename string) {
 	}
 }
 
+// LoadNamesFromCsv Loads the filenames from the given CSV and forwards it to the given StringWriter.
+func (fh *Db) LoadNamesFromCsv(filename string, writer util.StringWriter) {
+
+	content := readFileContent(filename)
+	reader := csv.NewReader(bytes.NewReader(content))
+
+	for {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		util.CheckErrDontPanic(err, "")
+		writer.Write(record[0])
+	}
+}
+
 // SaveCsv Exports fingerprints to the given CSV file.
 func (fh *Db) SaveCsv(filename string) {
 

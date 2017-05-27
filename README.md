@@ -13,6 +13,8 @@ The application is able to perform several different tasks (determined by the `-
     * `-alg`: the algorithm to use (`crc32`, `md5`, `sha1`, `sha256`, `sha512`).
     * `-outchk`: the path of the output CSV.
     * `-bp`: base path, this part of `indir`'s path will not be written in the output. Optional.
+    * `-missingonly`: if set to true `true`, checksums will be calculated for missing files only. In this case you will also have to provide an input CSV (`-inchk`). Optional, the default value is `false`.
+    * `-inchk`: the path of the earlier generated CSV. Optional, ignored when `-missingonly=false`.
   * `-task compare`: compare the content of a directory with an earlier snapshot and produce a file containing old name: new name pairs as well as a new CSV file with the updated filenames.
     * `-indir`: the directory to calculate checksums for.
     * `-alg`: the algorithm to use (`crc32`, `md5`, `sha1`, `sha256`, `sha512`).
@@ -30,7 +32,7 @@ The application is able to perform several different tasks (determined by the `-
   * `-task verify`: verifies the files listed in the input file.
     * `-inchk`: the path of the file containing checksums.
     * `-bp`: the base path for each entry listed in the input. Optional.
-    * `-namesonly`: if set to true `true`, only paths will be examined, checking whether they exist or not, otherwise checksums will be also verified. Optional, the default value is `false`.
+    * `-missingonly`: if set to true `true`, only paths will be examined, checking whether they exist or not, otherwise checksums will be also verified. Optional, the default value is `false`.
 
 ## Development Environment
 

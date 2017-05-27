@@ -43,7 +43,7 @@ func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, o
 
 	cache := buildFingerprintCache(oldFingerprints)
 
-	f, err := os.OpenFile(outputPath, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0660)
+	f, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR|os.O_APPEND, 0660)
 	util.CheckErr(err, "Cannot open output for name pairs: "+outputPath)
 	defer f.Close()
 

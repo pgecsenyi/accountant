@@ -102,21 +102,26 @@ func filterFingerprint(fingerprint *dal.Fingerprint, filenameFilter string, algF
 func (exporter *Exporter) exportChecksum(filename string, hash string, algorithm string) {
 
 	if algorithm == dal.CRC32 {
-		exporter.openOutputFile(&exporter.fileWriters.fCrc32, dal.CRC32EXT)
-		exporter.fileWriters.fCrc32.WriteString(fmt.Sprintf("%s %s\n", filename, hash))
-	} else if algorithm == dal.MD5 {
-		exporter.openOutputFile(&exporter.fileWriters.fMd5, dal.MD5EXT)
-		exporter.fileWriters.fMd5.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == dal.SHA1 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha1, dal.SHA1EXT)
-		exporter.fileWriters.fSha1.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == dal.SHA256 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha256, dal.SHA256EXT)
-		exporter.fileWriters.fSha256.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
-	} else if algorithm == dal.SHA512 {
-		exporter.openOutputFile(&exporter.fileWriters.fSha512, dal.SHA512EXT)
-		exporter.fileWriters.fSha512.WriteString(fmt.Sprintf("%s *%s\n", hash, filename))
+		entry := fmt.Sprintf("%s %s\n", filename, hash)
+		exporter.saveEntry(&exporter.fileWriters.fCrc32, dal.CRC32EXT, entry)
+	} else {
+		entry := fmt.Sprintf("%s *%s\n", hash, filename)
+		if algorithm == dal.MD5 {
+			exporter.saveEntry(&exporter.fileWriters.fMd5, dal.MD5EXT, entry)
+		} else if algorithm == dal.SHA1 {
+			exporter.saveEntry(&exporter.fileWriters.fSha1, dal.SHA1EXT, entry)
+		} else if algorithm == dal.SHA256 {
+			exporter.saveEntry(&exporter.fileWriters.fSha256, dal.SHA256EXT, entry)
+		} else if algorithm == dal.SHA512 {
+			exporter.saveEntry(&exporter.fileWriters.fSha512, dal.SHA512EXT, entry)
+		}
 	}
+}
+
+func (exporter *Exporter) saveEntry(writer **os.File, extension string, entry string) {
+
+	exporter.openOutputFile(writer, extension)
+	(*writer).WriteString(entry)
 }
 
 func (exporter *Exporter) openOutputFile(writer **os.File, extension string) {
@@ -124,7 +129,8 @@ func (exporter *Exporter) openOutputFile(writer **os.File, extension string) {
 	if *writer == nil {
 		fullPath := path.Join(exporter.OutputDirectory, "Checksum"+extension)
 		newWriter, err := os.Create(fullPath)
-		*writer = newWriter
 		util.CheckErr(err, "Failed to open output file "+fullPath)
+
+		*writer = newWriter
 	}
 }

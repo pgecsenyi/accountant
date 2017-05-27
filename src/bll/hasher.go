@@ -12,13 +12,9 @@ import (
 	"io"
 	"os"
 	"path"
-	"runtime"
 	"time"
 	"util"
 )
-
-var currentTime = time.Now().Format(time.RFC3339)
-var runTimeVersion = runtime.Version()
 
 // Hasher Logic for calculating checksums.
 type Hasher struct {
@@ -29,13 +25,41 @@ type Hasher struct {
 // NewHasher Instantiates a new Hasher object.
 func NewHasher(algorithm string) Hasher {
 
-	hashFunc := getHashFunc(algorithm)
+	hashFunc := createHashFunc(algorithm)
 
 	return Hasher{algorithm, hashFunc}
 }
 
-// CalculateChecksumForFile Calculates checksum for the given file using the given algorithm.
-func (hasher *Hasher) CalculateChecksumForFile(filename string) []byte {
+// CalculateChecksum Calculates the checksum of the given file.
+func (hasher *Hasher) CalculateChecksum(filename string) []byte {
+
+	return hasher.calculateChecksum(filename)
+}
+
+// GetFingerprint Calculates fingerprint for the given file.
+func (hasher *Hasher) CalculateFingerprint(basePath string, effectiveBasePath string, file string) *dal.Fingerprint {
+
+	currentTime := time.Now().Format(time.RFC3339)
+	fingerprint := hasher.calculateFingerprint(basePath, effectiveBasePath, file, currentTime)
+
+	return fingerprint
+}
+
+// GetFingerprints Calculates fingerprint for each file in the given list.
+func (hasher *Hasher) CalculateFingerprints(basePath string, effectiveBasePath string, files []string) *list.List {
+
+	currentTime := time.Now().Format(time.RFC3339)
+	fingerprints := list.New()
+
+	for _, file := range files {
+		fingerprint := hasher.calculateFingerprint(basePath, effectiveBasePath, file, currentTime)
+		fingerprints.PushFront(fingerprint)
+	}
+
+	return fingerprints
+}
+
+func (hasher *Hasher) calculateChecksum(filename string) []byte {
 
 	file, err := os.Open(filename)
 	util.CheckErr(err, "Cannot read file "+filename+".")
@@ -48,35 +72,31 @@ func (hasher *Hasher) CalculateChecksumForFile(filename string) []byte {
 	return checksum
 }
 
-// CalculateChecksumsForFiles Calculates checksum for each file in the given list.
-func (hasher *Hasher) CalculateChecksumsForFiles(basePath string, effectiveBasePath string, files []string) *list.List {
+func (hasher *Hasher) calculateFingerprint(
+	basePath string, effectiveBasePath string, file string, currentTime string) *dal.Fingerprint {
 
-	fingerprints := list.New()
-	for _, file := range files {
-		hasher.recordChecksumForFile(basePath, effectiveBasePath, file, fingerprints)
-	}
+	fullPath := path.Join(basePath, file)
+	checksum := hasher.calculateChecksum(fullPath)
+	effectivePath := util.NormalizePath(path.Join(effectiveBasePath, file))
+	fingerprint := hasher.createFingerprint(effectivePath, checksum, currentTime)
 
-	return fingerprints
+	return fingerprint
 }
 
-func (hasher *Hasher) recordChecksumForFile(
-	basePath string, effectiveBasePath string, filePath string, fingerprints *list.List) {
-
-	fullPath := path.Join(basePath, filePath)
-	checksum := hasher.CalculateChecksumForFile(fullPath)
+func (hasher *Hasher) createFingerprint(file string, checksum []byte, currentTime string) *dal.Fingerprint {
 
 	fp := new(dal.Fingerprint)
-	fp.Filename = util.NormalizePath(path.Join(effectiveBasePath, filePath))
+	fp.Filename = file
 	fp.Checksum = checksum
 	fp.Algorithm = hasher.algorithm
 	fp.CreatedAt = currentTime
-	fp.Creator = runTimeVersion
+	fp.Creator = util.RuntimeVersion
 	fp.Note = ""
 
-	fingerprints.PushFront(fp)
+	return fp
 }
 
-func getHashFunc(algorithm string) hash.Hash {
+func createHashFunc(algorithm string) hash.Hash {
 
 	if algorithm == dal.CRC32 {
 		return crc32.NewIEEE()

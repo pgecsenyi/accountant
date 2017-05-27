@@ -49,12 +49,18 @@ func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint, verifyNameOn
 		log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
 		verifier.countMissing++
 	} else if !verifyNameOnly {
-		hasher := NewHasher(fingerprint.Algorithm)
-		checksum := hasher.CalculateChecksumForFile(fullPath)
-		if !compareByteSlices(checksum, fingerprint.Checksum) {
-			log.Println(fmt.Sprintf("Invalid: %s", fingerprint.Filename))
-			verifier.countInvalid++
-		}
+		verifier.verifyChecksum(fingerprint, fullPath)
+	}
+}
+
+func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath string) {
+
+	hasher := NewHasher(fingerprint.Algorithm)
+	checksum := hasher.CalculateChecksum(fullPath)
+
+	if !compareByteSlices(checksum, fingerprint.Checksum) {
+		log.Println(fmt.Sprintf("Invalid: %s", fingerprint.Filename))
+		verifier.countInvalid++
 	}
 }
 

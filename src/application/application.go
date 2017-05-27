@@ -51,15 +51,17 @@ func (app *Application) Execute() {
 
 	db := dal.NewDb()
 	if app.config.task == taskCalculate {
-		calculator := bll.Calculator{
-			app.config.inputDirectory, app.config.outputChecksum, app.config.basePath, app.config.inputChecksum}
-		calculator.RecordChecksumsForDirectory(&db, app.config.algorithm)
+		calculator := bll.NewCalculator(
+			app.config.inputDirectory, app.config.algorithm,
+			app.config.outputChecksum, app.config.basePath,
+			app.config.inputChecksum)
+		calculator.Calculate(&db)
 	} else if app.config.task == taskCompare {
 		comparer := bll.Comparer{
 			app.config.inputDirectory, app.config.inputChecksum,
 			app.config.outputNames, app.config.outputChecksum,
 			app.config.basePath}
-		comparer.RecordNameChangesForDirectory(&db, app.config.algorithm)
+		comparer.Compare(&db, app.config.algorithm)
 	} else if app.config.task == taskExport {
 		exporter := bll.NewExporter(
 			app.config.inputChecksum, app.config.outputDirectory,

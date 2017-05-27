@@ -18,20 +18,34 @@ type Comparer struct {
 	BasePath        string
 }
 
-// RecordNameChangesForDirectory Verifies and stores changes in the given directory based on the checksums calculated earlier.
-func (comparer *Comparer) RecordNameChangesForDirectory(db *dal.Db, algorithm string) {
+// Compare Verifies and stores changes in the given directory based on the checksums calculated earlier.
+func (comparer *Comparer) Compare(db *dal.Db, algorithm string) {
+
+	oldFingerprints := comparer.loadOldFingerprints(db)
+	newFingerprints := comparer.calculateNewFingerprints(db, algorithm)
+
+	db.Fingerprints = newFingerprints
+	db.SaveCsv(comparer.OutputChecksums)
+
+	compareAndSaveResults(oldFingerprints, newFingerprints, comparer.OutputNames)
+}
+
+func (comparer *Comparer) loadOldFingerprints(db *dal.Db) *list.List {
 
 	db.LoadCsv(comparer.InputChecksums)
 	oldFingerprints := db.Fingerprints
 
-	hasher := NewHasher(algorithm)
-	files := util.ListDirectoryRecursively(comparer.InputDirectory)
-	effectiveBasePath := comparer.getEffectiveBasePath()
-	newFingerprints := hasher.CalculateChecksumsForFiles(comparer.InputDirectory, effectiveBasePath, files)
-	db.Fingerprints = newFingerprints
+	return oldFingerprints
+}
 
-	recordDifferences(oldFingerprints, newFingerprints, comparer.OutputNames)
-	db.SaveCsv(comparer.OutputChecksums)
+func (comparer *Comparer) calculateNewFingerprints(db *dal.Db, algorithm string) *list.List {
+
+	hasher := NewHasher(algorithm)
+	effectiveBasePath := comparer.getEffectiveBasePath()
+	files := util.ListDirectoryRecursively(comparer.InputDirectory)
+	newFingerprints := hasher.CalculateFingerprints(comparer.InputDirectory, effectiveBasePath, files)
+
+	return newFingerprints
 }
 
 func (comparer *Comparer) getEffectiveBasePath() string {
@@ -39,24 +53,25 @@ func (comparer *Comparer) getEffectiveBasePath() string {
 	return util.TrimPath(comparer.InputDirectory, comparer.BasePath)
 }
 
-func recordDifferences(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
+func compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
 
 	cache := buildFingerprintCache(oldFingerprints)
 
-	f, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR|os.O_APPEND, 0660)
+	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR|os.O_APPEND, 0660)
 	util.CheckErr(err, "Cannot open output for name pairs: "+outputPath)
-	defer f.Close()
+	defer outputFile.Close()
 
-	compareFingerprints(cache, newFingerprints, f)
+	compareFingerprints(cache, newFingerprints, outputFile)
 }
 
 func buildFingerprintCache(fingerprints *list.List) map[string]*dal.Fingerprint {
 
 	var cache = make(map[string]*dal.Fingerprint)
+
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
-		fp := element.Value.(*dal.Fingerprint)
-		fpString := hex.EncodeToString(fp.Checksum)
-		cache[fpString] = fp
+		fingerprint := element.Value.(*dal.Fingerprint)
+		checksum := hex.EncodeToString(fingerprint.Checksum)
+		cache[checksum] = fingerprint
 	}
 
 	return cache
@@ -67,23 +82,29 @@ func compareFingerprints(oldFingerprints map[string]*dal.Fingerprint, newFingerp
 	foundFingerprints := make(map[string]bool)
 
 	for element := newFingerprints.Front(); element != nil; element = element.Next() {
-		newFp := element.Value.(*dal.Fingerprint)
-		newFpString := hex.EncodeToString(newFp.Checksum)
-		oldFp := oldFingerprints[newFpString]
-		if oldFp == nil {
-			log.Println("New: " + newFp.Filename + ".")
-		} else {
-			saveNameChange(oldFp.Filename, newFp.Filename, output)
-			newFp.CreatedAt = oldFp.CreatedAt
-			oldFpString := hex.EncodeToString(oldFp.Checksum)
-			foundFingerprints[oldFpString] = true
-		}
+		fingerprint := element.Value.(*dal.Fingerprint)
+		checksum := hex.EncodeToString(fingerprint.Checksum)
+		matchingFingerprint := oldFingerprints[checksum]
+		processMatch(fingerprint, checksum, matchingFingerprint, output, foundFingerprints)
 	}
 
 	printRemovedFiles(oldFingerprints, foundFingerprints)
 }
 
-func saveNameChange(oldName string, newName string, output *os.File) {
+func processMatch(
+	fingerprint *dal.Fingerprint, checksum string, matchingFingerprint *dal.Fingerprint,
+	output *os.File, foundFingerprints map[string]bool) {
+
+	if matchingFingerprint == nil {
+		log.Println("New: " + fingerprint.Filename + ".")
+	} else {
+		saveNamePair(matchingFingerprint.Filename, fingerprint.Filename, output)
+		fingerprint.CreatedAt = matchingFingerprint.CreatedAt
+		foundFingerprints[checksum] = true
+	}
+}
+
+func saveNamePair(oldName string, newName string, output *os.File) {
 
 	output.WriteString(newName + "\r\n")
 	output.WriteString("    " + oldName + "\r\n")

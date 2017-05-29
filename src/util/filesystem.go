@@ -2,11 +2,22 @@ package util
 
 import (
 	"container/list"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
 )
+
+// CheckIfDirectoryExists Checks whether the given directory exist or not.
+func CheckIfDirectoryExists(path string) bool {
+
+	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
+		return true
+	}
+
+	return false
+}
 
 // CheckIfFileExists Checks whether the given file exist or not.
 func CheckIfFileExists(path string) bool {
@@ -19,17 +30,17 @@ func CheckIfFileExists(path string) bool {
 }
 
 // ListDirectory Lists the given directory (only the first level of the hierarchy).
-func ListDirectory(p string) []os.FileInfo {
+func ListDirectory(path string) []os.FileInfo {
 
-	files, err := ioutil.ReadDir(p)
-	CheckErr(err, "Cannot list files in directory "+p+".")
+	files, err := ioutil.ReadDir(path)
+	CheckErr(err, fmt.Sprintf("Cannot list files in directory %s.", path))
 
 	return files
 }
 
 // ListDirectoryRecursively Lists the given directory recursively. Returns a single path list that does not contain
 // directories.
-func ListDirectoryRecursively(p string) []string {
+func ListFilesRecursively(p string) []string {
 
 	resultList := listDirectoryRecursively(p)
 	result := make([]string, resultList.Len())
@@ -62,13 +73,17 @@ func TrimPath(fullPath string, basePath string) string {
 		return normalizedFullPath
 	}
 
+	nFullPathLen := len(normalizedFullPath)
 	nBasePathLen := len(normalizedBasePath)
 
 	if normalizedFullPath[:nBasePathLen] == normalizedBasePath {
-		return normalizedFullPath[nBasePathLen:]
+		if nBasePathLen+1 > nFullPathLen {
+			return fullPath[nBasePathLen:]
+		}
+		return normalizedFullPath[nBasePathLen+1:]
 	}
 
-	return fullPath
+	return normalizedFullPath
 }
 
 func listDirectoryRecursively(p string) *list.List {

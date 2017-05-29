@@ -43,7 +43,7 @@ func NewImporter(db dal.Database, inputDirectory string, outputChecksums string)
 // Convert Converts checksum data produced by third party utilities to CSV.
 func (importer *Importer) Convert() {
 
-	files := util.ListDirectoryRecursively(importer.InputDirectory)
+	files := util.ListFilesRecursively(importer.InputDirectory)
 
 	for _, file := range files {
 		fullPath := path.Join(importer.InputDirectory, file)

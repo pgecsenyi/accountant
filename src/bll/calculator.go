@@ -28,7 +28,7 @@ func NewCalculator(db dal.Database, inputDirectory string, algorithm string, bas
 // Calculate Calculates and stores checksums for the files in the given directory.
 func (calculator *Calculator) Calculate(missingOnly bool) {
 
-	files := util.ListDirectoryRecursively(calculator.InputDirectory)
+	files := util.ListFilesRecursively(calculator.InputDirectory)
 	fingerprints := calculator.calculateFingerprints(files, missingOnly)
 
 	calculator.Db.SetFingerprints(fingerprints)

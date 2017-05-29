@@ -1,2 +1,9 @@
 # Binary directory.
 /bin/
+
+# Test files.
+/src/test/test
+/pkg/*/application.a
+/pkg/*/bll.a
+/pkg/*/dal.a
+/pkg/*/util.a

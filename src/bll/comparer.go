@@ -41,7 +41,7 @@ func (comparer *Comparer) calculateNewFingerprints(algorithm string) *list.List 
 
 	hasher := NewHasher(algorithm)
 	effectiveBasePath := comparer.getEffectiveBasePath()
-	files := util.ListDirectoryRecursively(comparer.InputDirectory)
+	files := util.ListFilesRecursively(comparer.InputDirectory)
 	newFingerprints := hasher.CalculateFingerprints(comparer.InputDirectory, effectiveBasePath, files)
 
 	return newFingerprints

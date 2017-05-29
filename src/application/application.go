@@ -181,23 +181,14 @@ func (app *Application) stopIfInputChecksumDoesNotExist() {
 
 func (app *Application) stopIfInputDirectoryDoesNotExist() {
 
-	if app.config.inputDirectory == "" || !checkIfDirectoryExists(app.config.inputDirectory) {
+	if app.config.inputDirectory == "" || !util.CheckIfDirectoryExists(app.config.inputDirectory) {
 		log.Fatalln("Directory " + app.config.inputDirectory + " does not exist.")
 	}
 }
 
 func (app *Application) stopIfOutputDirectoryDoesNotExist() {
 
-	if !checkIfDirectoryExists(app.config.outputDirectory) {
+	if !util.CheckIfDirectoryExists(app.config.outputDirectory) {
 		log.Fatalln("Directory " + app.config.outputDirectory + " does not exist.")
 	}
-}
-
-func checkIfDirectoryExists(path string) bool {
-
-	if stat, err := os.Stat(path); err == nil && stat.IsDir() {
-		return true
-	}
-
-	return false
 }

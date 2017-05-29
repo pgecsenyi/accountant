@@ -1,16 +1,13 @@
 package util
 
-import (
-	"fmt"
-	"log"
-)
+import "log"
 
 // CheckErr Displays the given error message if an error has happened and interrupts execution.
 func CheckErr(err error, message string) {
 
 	if err != nil {
 		if message != "" {
-			fmt.Println(message)
+			log.Println(message)
 		}
 		panic(err)
 	}

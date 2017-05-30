@@ -32,7 +32,7 @@ func (calculator *Calculator) Calculate(missingOnly bool) {
 	fingerprints := calculator.calculateFingerprints(files, missingOnly)
 
 	calculator.Db.SetFingerprints(fingerprints)
-	calculator.Db.Save()
+	calculator.Db.SaveFingerprints()
 }
 
 func (calculator *Calculator) calculateFingerprints(files []string, missingOnly bool) *list.List {
@@ -59,7 +59,7 @@ func (calculator *Calculator) calculateFingerprintsForMissingFiles(files []strin
 func (calculator *Calculator) loadMissingNames() *effectiveTextMemory {
 
 	etm := newEffectiveTextMemory()
-	calculator.Db.LoadNames(etm)
+	calculator.Db.LoadNamesFromFingeprints(etm)
 	etm.ClearCache()
 
 	return etm

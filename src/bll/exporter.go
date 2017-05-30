@@ -39,7 +39,7 @@ func NewExporter(db dal.Database, outputDirectory string, filter string, basePat
 // Convert Converts checksum data to formats that third party utilities understand.
 func (exporter *Exporter) Convert() {
 
-	exporter.Db.Load()
+	exporter.Db.LoadFingerprints()
 	defer exporter.closeFiles()
 	exporter.exportChecksums()
 }

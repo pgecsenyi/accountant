@@ -36,7 +36,7 @@ func (hasher *Hasher) CalculateChecksum(filename string) []byte {
 	return hasher.calculateChecksum(filename)
 }
 
-// GetFingerprint Calculates fingerprint for the given file.
+// CalculateFingerprint Calculates fingerprint for the given file.
 func (hasher *Hasher) CalculateFingerprint(basePath string, effectiveBasePath string, file string) *dal.Fingerprint {
 
 	currentTime := time.Now().Format(time.RFC3339)
@@ -45,7 +45,7 @@ func (hasher *Hasher) CalculateFingerprint(basePath string, effectiveBasePath st
 	return fingerprint
 }
 
-// GetFingerprints Calculates fingerprint for each file in the given list.
+// CalculateFingerprints Calculates fingerprint for each file in the given list.
 func (hasher *Hasher) CalculateFingerprints(basePath string, effectiveBasePath string, files []string) *list.List {
 
 	currentTime := time.Now().Format(time.RFC3339)

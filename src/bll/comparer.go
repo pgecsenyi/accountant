@@ -4,8 +4,8 @@ import (
 	"container/list"
 	"dal"
 	"encoding/hex"
+	"fmt"
 	"log"
-	"os"
 	"util"
 )
 
@@ -24,14 +24,15 @@ func (comparer *Comparer) Compare(algorithm string) {
 	newFingerprints := comparer.calculateNewFingerprints(algorithm)
 
 	comparer.Db.SetFingerprints(newFingerprints)
-	comparer.Db.Save()
+	comparer.Db.SaveFingerprints()
 
-	compareAndSaveResults(oldFingerprints, newFingerprints, comparer.OutputNames)
+	comparer.compareAndSaveResults(oldFingerprints, newFingerprints, comparer.OutputNames)
+	comparer.Db.SaveNamePairs()
 }
 
 func (comparer *Comparer) loadOldFingerprints() *list.List {
 
-	comparer.Db.Load()
+	comparer.Db.LoadFingerprints()
 	oldFingerprints := comparer.Db.GetFingerprints()
 
 	return oldFingerprints
@@ -52,15 +53,32 @@ func (comparer *Comparer) getEffectiveBasePath() string {
 	return util.TrimPath(comparer.InputDirectory, comparer.BasePath)
 }
 
-func compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
+func (comparer *Comparer) compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
 
 	cache := buildFingerprintCache(oldFingerprints)
+	foundFingerprints := make(map[string]bool)
 
-	outputFile, err := os.OpenFile(outputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR|os.O_APPEND, 0660)
-	util.CheckErr(err, "Cannot open output for name pairs: "+outputPath)
-	defer outputFile.Close()
+	for element := newFingerprints.Front(); element != nil; element = element.Next() {
+		fingerprint := element.Value.(*dal.Fingerprint)
+		checksum := hex.EncodeToString(fingerprint.Checksum)
+		matchingFingerprint := cache[checksum]
+		comparer.processMatch(fingerprint, checksum, matchingFingerprint, foundFingerprints)
+	}
 
-	compareFingerprints(cache, newFingerprints, outputFile)
+	printRemovedFiles(cache, foundFingerprints)
+}
+
+func (comparer *Comparer) processMatch(
+	fingerprint *dal.Fingerprint, checksum string,
+	matchingFingerprint *dal.Fingerprint, foundFingerprints map[string]bool) {
+
+	if matchingFingerprint == nil {
+		log.Println(fmt.Sprintf("New: %s", fingerprint.Filename))
+	} else {
+		comparer.Db.AddNamePair(&dal.NamePair{fingerprint.Filename, matchingFingerprint.Filename})
+		fingerprint.CreatedAt = matchingFingerprint.CreatedAt
+		foundFingerprints[checksum] = true
+	}
 }
 
 func buildFingerprintCache(fingerprints *list.List) map[string]*dal.Fingerprint {
@@ -76,47 +94,12 @@ func buildFingerprintCache(fingerprints *list.List) map[string]*dal.Fingerprint 
 	return cache
 }
 
-func compareFingerprints(oldFingerprints map[string]*dal.Fingerprint, newFingerprints *list.List, output *os.File) {
-
-	foundFingerprints := make(map[string]bool)
-
-	for element := newFingerprints.Front(); element != nil; element = element.Next() {
-		fingerprint := element.Value.(*dal.Fingerprint)
-		checksum := hex.EncodeToString(fingerprint.Checksum)
-		matchingFingerprint := oldFingerprints[checksum]
-		processMatch(fingerprint, checksum, matchingFingerprint, output, foundFingerprints)
-	}
-
-	printRemovedFiles(oldFingerprints, foundFingerprints)
-}
-
-func processMatch(
-	fingerprint *dal.Fingerprint, checksum string, matchingFingerprint *dal.Fingerprint,
-	output *os.File, foundFingerprints map[string]bool) {
-
-	if matchingFingerprint == nil {
-		log.Println("New: " + fingerprint.Filename + ".")
-	} else {
-		saveNamePair(matchingFingerprint.Filename, fingerprint.Filename, output)
-		fingerprint.CreatedAt = matchingFingerprint.CreatedAt
-		foundFingerprints[checksum] = true
-	}
-}
-
-func saveNamePair(oldName string, newName string, output *os.File) {
-
-	output.WriteString(newName + "\r\n")
-	output.WriteString("    " + oldName + "\r\n")
-	output.WriteString("    \r\n")
-	output.WriteString("    \r\n")
-}
-
 func printRemovedFiles(oldFingerprints map[string]*dal.Fingerprint, foundFingerprints map[string]bool) {
 
 	for hash, fingerprint := range oldFingerprints {
 		hasFound := foundFingerprints[hash]
 		if !hasFound {
-			log.Println("Missing: " + fingerprint.Filename)
+			log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
 		}
 	}
 }

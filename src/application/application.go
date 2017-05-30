@@ -50,7 +50,7 @@ func (app *Application) Execute() {
 	defer app.cleanUp()
 
 	conf := app.config
-	db := dal.NewCsvDatabase(conf.inputChecksum, conf.outputChecksum)
+	db := dal.NewCsvDatabase(conf.inputChecksum, conf.outputChecksum, conf.outputNames)
 
 	if app.config.task == taskCalculate {
 		calculator := bll.NewCalculator(db, conf.inputDirectory, conf.algorithm, conf.basePath)

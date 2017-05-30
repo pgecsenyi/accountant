@@ -51,7 +51,7 @@ func (importer *Importer) Convert() {
 		importer.loadDataFromFile(fullPath)
 	}
 
-	importer.Db.Save()
+	importer.Db.SaveFingerprints()
 }
 
 func (importer *Importer) updateProtoTime(filePath string) {

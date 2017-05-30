@@ -8,9 +8,11 @@ import (
 // Database Interface for database implementations.
 type Database interface {
 	AddFingerprint(fingerprint *Fingerprint)
+	AddNamePair(namePair *NamePair)
 	GetFingerprints() *list.List
-	Load()
-	LoadNames(writer util.StringWriter)
-	Save()
+	LoadFingerprints()
+	LoadNamesFromFingeprints(writer util.StringWriter)
+	SaveFingerprints()
+	SaveNamePairs()
 	SetFingerprints(*list.List)
 }

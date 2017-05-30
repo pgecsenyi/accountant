@@ -14,14 +14,17 @@ import (
 
 // CsvDatabase Logic for calculating checksums.
 type CsvDatabase struct {
-	inputPath    string
-	outputPath   string
-	fingerprints *list.List
+	fpInputPath        string
+	fpOutputPath       string
+	namePairOutputPath string
+	fingerprints       *list.List
+	namePairs          *list.List
 }
 
 // NewCsvDatabase Instantiates a new CsvDatabase object.
-func NewCsvDatabase(inputPath string, outputPath string) *CsvDatabase {
-	return &CsvDatabase{inputPath, outputPath, list.New()}
+func NewCsvDatabase(fpInputPath string, fpOutputPath string, namePairOutputPath string) *CsvDatabase {
+
+	return &CsvDatabase{fpInputPath, fpOutputPath, namePairOutputPath, list.New(), list.New()}
 }
 
 // AddFingerprint Adds a fingerprint to the database.
@@ -32,16 +35,24 @@ func (db *CsvDatabase) AddFingerprint(fingerprint *Fingerprint) {
 	}
 }
 
+// AddNamePair Adds a name pair to the database.
+func (db *CsvDatabase) AddNamePair(namePair *NamePair) {
+
+	if namePair != nil {
+		db.namePairs.PushFront(namePair)
+	}
+}
+
 // GetFingerprints Returns stored fingerprints.
 func (db *CsvDatabase) GetFingerprints() *list.List {
 
 	return db.fingerprints
 }
 
-// Load Loads fingerprints from the given CSV file.
-func (db *CsvDatabase) Load() {
+// LoadFingerprints Loads fingerprints from the given CSV file.
+func (db *CsvDatabase) LoadFingerprints() {
 
-	content := readFileContent(db.inputPath)
+	content := readFileContent(db.fpInputPath)
 	reader := csv.NewReader(bytes.NewReader(content))
 
 	for {
@@ -54,10 +65,10 @@ func (db *CsvDatabase) Load() {
 	}
 }
 
-// LoadNames Loads the filenames and forwards it to the given StringWriter.
-func (db *CsvDatabase) LoadNames(writer util.StringWriter) {
+// LoadNamesFromFingeprints Loads the filenames and forwards it to the given StringWriter.
+func (db *CsvDatabase) LoadNamesFromFingeprints(writer util.StringWriter) {
 
-	content := readFileContent(db.inputPath)
+	content := readFileContent(db.fpInputPath)
 	reader := csv.NewReader(bytes.NewReader(content))
 
 	for {
@@ -70,16 +81,29 @@ func (db *CsvDatabase) LoadNames(writer util.StringWriter) {
 	}
 }
 
-// Save Saves fingerprints to the output CSV file.
-func (db *CsvDatabase) Save() {
+// SaveFingerprints Saves fingerprints to the output CSV file.
+func (db *CsvDatabase) SaveFingerprints() {
 
 	records := db.createCsvRecords()
 
-	file, err := os.Create(db.outputPath)
-	util.CheckErrDontPanic(err, fmt.Sprintf("Cannot write file %s.", db.outputPath))
+	file, err := os.Create(db.fpOutputPath)
+	util.CheckErrDontPanic(err, fmt.Sprintf("Cannot write file %s.", db.fpOutputPath))
 	defer file.Close()
 
 	writeCsv(records, file)
+}
+
+// SaveNamePairs Saves name pairs to a text file.
+func (db *CsvDatabase) SaveNamePairs() {
+
+	outputFile, err := os.OpenFile(db.namePairOutputPath, os.O_CREATE|os.O_TRUNC|os.O_RDWR, 0660)
+	util.CheckErr(err, fmt.Sprintf("Cannot write name pairs to %s.", db.namePairOutputPath))
+	defer outputFile.Close()
+
+	for element := db.namePairs.Front(); element != nil; element = element.Next() {
+		namePair := element.Value.(*NamePair)
+		writeNamePair(namePair, outputFile)
+	}
 }
 
 // SetFingerprints Sets stored fingerprints.
@@ -147,4 +171,12 @@ func writeCsv(records [][]string, destination io.Writer) {
 	writer.WriteAll(records)
 
 	util.CheckErrDontPanic(writer.Error(), "Error writing CSV.")
+}
+
+func writeNamePair(namePair *NamePair, outputFile *os.File) {
+
+	outputFile.WriteString(namePair.NewName + "\r\n")
+	outputFile.WriteString("    " + namePair.OldName + "\r\n")
+	outputFile.WriteString("    \r\n")
+	outputFile.WriteString("    \r\n")
 }

@@ -9,3 +9,9 @@ type Fingerprint struct {
 	Creator   string
 	Note      string
 }
+
+// NamePair Stores old name - new name pairs.
+type NamePair struct {
+	NewName string
+	OldName string
+}

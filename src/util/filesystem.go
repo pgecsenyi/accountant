@@ -38,7 +38,7 @@ func ListDirectory(path string) []os.FileInfo {
 	return files
 }
 
-// ListDirectoryRecursively Lists the given directory recursively. Returns a single path list that does not contain
+// ListFilesRecursively Lists the given directory recursively. Returns a single path list that does not contain
 // directories.
 func ListFilesRecursively(p string) []string {
 

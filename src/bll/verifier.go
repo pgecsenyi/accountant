@@ -28,7 +28,7 @@ func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifi
 // Verify Verifies checksums in the given file.
 func (verifier *Verifier) Verify(verifyNamesOnly bool) {
 
-	verifier.Db.Load()
+	verifier.Db.LoadFingerprints()
 	verifier.verifyEntries(verifyNamesOnly)
 	verifier.printSummary(verifyNamesOnly)
 }

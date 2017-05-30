@@ -102,13 +102,11 @@ func createHashFunc(algorithm string) hash.Hash {
 		return crc32.NewIEEE()
 	} else if algorithm == dal.MD5 {
 		return md5.New()
-	} else if algorithm == dal.SHA1 {
-		return sha1.New()
 	} else if algorithm == dal.SHA256 {
 		return sha256.New()
 	} else if algorithm == dal.SHA512 {
 		return sha512.New()
 	}
 
-	return nil
+	return sha1.New()
 }

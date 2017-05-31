@@ -9,6 +9,7 @@ import (
 type effectiveTextMemory struct {
 	CountAll        int
 	CountCollisions int
+	UseCache        bool
 	hashFunc        hash.Hash
 	storage         map[string]bool
 	textCache       map[string]bool
@@ -20,7 +21,7 @@ func newEffectiveTextMemory() *effectiveTextMemory {
 	storage := make(map[string]bool)
 	textCache := make(map[string]bool)
 
-	return &effectiveTextMemory{0, 0, fnv.New32a(), storage, textCache}
+	return &effectiveTextMemory{0, 0, true, fnv.New32a(), storage, textCache}
 }
 
 func (etm *effectiveTextMemory) ClearCache() {
@@ -37,11 +38,13 @@ func (etm *effectiveTextMemory) ContainsText(text string) bool {
 
 func (etm *effectiveTextMemory) Write(text string) {
 
-	if etm.textCache[text] {
-		return
+	if etm.UseCache {
+		if etm.textCache[text] {
+			return
+		}
+		etm.textCache[text] = true
 	}
 
-	etm.textCache[text] = true
 	textHash := etm.calculateHash(text)
 	etm.storeHash(textHash)
 }

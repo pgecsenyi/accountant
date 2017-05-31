@@ -5,20 +5,98 @@ import "os"
 
 var testHelper = NewTestHelper()
 
-func Test_Util(t *testing.T) {
+func Test_CheckErr(t *testing.T) {
 
-	setupUtilTests()
-	t.Run("CheckErr", test_CheckErr)
+	testHelper.AssertPanic(t, func() {
+		CheckErr(os.ErrExist, "")
+	})
+}
+
+func Test_CompareByteSlices_BothNil(t *testing.T) {
+
+	var b1 []byte
+	var b2 []byte
+
+	result := CompareByteSlices(b1, b2)
+
+	if !result {
+		t.Errorf("The two byte slices should be equal.")
+	}
+}
+
+func Test_CompareByteSlices_OneNil(t *testing.T) {
+
+	b1 := []byte{}
+	var b2 []byte
+
+	result := CompareByteSlices(b1, b2)
+
+	if result {
+		t.Errorf("The two byte slices should not be equal.")
+	}
+}
+
+func Test_CompareByteSlices_BothEmpty(t *testing.T) {
+
+	b1 := []byte{}
+	b2 := []byte{}
+
+	result := CompareByteSlices(b1, b2)
+
+	if !result {
+		t.Errorf("The two byte slices should be equal.")
+	}
+}
+
+func Test_CompareByteSlices_OneEmpty(t *testing.T) {
+
+	b1 := []byte{}
+	b2 := []byte{31, 215}
+
+	result := CompareByteSlices(b1, b2)
+
+	if result {
+		t.Errorf("The two byte slices should not be equal.")
+	}
+}
+
+func Test_CompareByteSlices_Equal(t *testing.T) {
+
+	b1 := []byte{31, 215}
+	b2 := []byte{31, 215}
+
+	result := CompareByteSlices(b1, b2)
+
+	if !result {
+		t.Errorf("The two byte slices should be equal.")
+	}
+}
+
+func Test_CompareByteSlices_NotEqual(t *testing.T) {
+
+	b1 := []byte{31, 125}
+	b2 := []byte{31, 215}
+
+	result := CompareByteSlices(b1, b2)
+
+	if result {
+		t.Errorf("The two byte slices should not be equal.")
+	}
+}
+
+func Test_Filesystem(t *testing.T) {
+
+	setupFilesystemTests()
 	t.Run("CheckIfDirectoryExists", test_CheckIfDirectoryExists)
 	t.Run("CheckIfFileExists", test_CheckIfFileExists)
 	t.Run("ListDirectory", test_ListDirectory)
 	t.Run("ListFilesRecursively", test_ListFilesRecursively)
 	t.Run("NormalizePath", test_NormalizePath)
 	t.Run("TrimPath", test_TrimPath)
-	tearDownUtilTests()
+	tearDownFilesystemTests()
 }
 
-func setupUtilTests() {
+func setupFilesystemTests() {
 
 	testHelper.CreateTestRootDirectory()
 	testHelper.CreateTestDirectory("dir1")
@@ -28,13 +106,6 @@ func setupUtilTests() {
 	testHelper.CreateTestFile("dir1/sample2.png")
 	testHelper.CreateTestFile("dir2/sample3.jpg")
 	testHelper.CreateTestFile("dir2/sample4.go")
-}
-
-func test_CheckErr(t *testing.T) {
-
-	testHelper.AssertPanic(t, func() {
-		CheckErr(os.ErrExist, "")
-	})
 }
 
 func test_CheckIfDirectoryExists(t *testing.T) {
@@ -143,7 +214,7 @@ func test_TrimPath(t *testing.T) {
 	}
 }
 
-func tearDownUtilTests() {
+func tearDownFilesystemTests() {
 
 	testHelper.CleanUp()
 }

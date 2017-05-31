@@ -60,7 +60,7 @@ func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath 
 	hasher := NewHasher(fingerprint.Algorithm)
 	checksum := hasher.CalculateChecksum(fullPath)
 
-	if !compareByteSlices(checksum, fingerprint.Checksum) {
+	if !util.CompareByteSlices(checksum, fingerprint.Checksum) {
 		log.Println(fmt.Sprintf("Invalid: %s", fingerprint.Filename))
 		verifier.countInvalid++
 	}
@@ -80,22 +80,4 @@ func (verifier *Verifier) printSummary(verifyNamesOnly bool) {
 			"Summary: %d/%d valid, %d missing, %d invalid.",
 			countValid, countAll, verifier.countMissing, verifier.countInvalid))
 	}
-}
-
-func compareByteSlices(slice1 []byte, slice2 []byte) bool {
-
-	if (slice1 == nil && slice2 != nil) || (slice1 != nil && slice2 == nil) {
-		return false
-	}
-	if len(slice1) != len(slice2) {
-		return false
-	}
-
-	for i := 0; i < len(slice1); i++ {
-		if slice1[i] != slice2[i] {
-			return false
-		}
-	}
-
-	return true
 }

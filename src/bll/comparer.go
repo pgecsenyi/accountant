@@ -13,7 +13,6 @@ import (
 type Comparer struct {
 	Db             dal.Database
 	InputDirectory string
-	OutputNames    string
 	BasePath       string
 }
 
@@ -26,7 +25,7 @@ func (comparer *Comparer) Compare(algorithm string) {
 	comparer.Db.SetFingerprints(newFingerprints)
 	comparer.Db.SaveFingerprints()
 
-	comparer.compareAndSaveResults(oldFingerprints, newFingerprints, comparer.OutputNames)
+	comparer.compareAndSaveResults(oldFingerprints, newFingerprints)
 	comparer.Db.SaveNamePairs()
 }
 
@@ -53,7 +52,7 @@ func (comparer *Comparer) getEffectiveBasePath() string {
 	return util.TrimPath(comparer.InputDirectory, comparer.BasePath)
 }
 
-func (comparer *Comparer) compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List, outputPath string) {
+func (comparer *Comparer) compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List) {
 
 	cache := buildFingerprintCache(oldFingerprints)
 	foundFingerprints := make(map[string]bool)

@@ -56,7 +56,7 @@ func (app *Application) Execute() {
 		calculator := bll.NewCalculator(db, conf.inputDirectory, conf.algorithm, conf.basePath)
 		calculator.Calculate(conf.missingOnly)
 	} else if app.config.task == taskCompare {
-		comparer := bll.Comparer{db, conf.inputDirectory, app.config.basePath}
+		comparer := bll.NewComparer(db, conf.inputDirectory, app.config.basePath)
 		comparer.Compare(app.config.algorithm)
 	} else if app.config.task == taskExport {
 		exporter := bll.NewExporter(db, conf.outputDirectory, conf.filter, conf.basePath)

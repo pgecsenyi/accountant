@@ -99,6 +99,7 @@ func setupOtherTests() {
 	testHelper.CreateTestDirectory("comparison")
 	testHelper.CreateTestDirectory("comparison/dir1")
 	testHelper.CreateTestFileWithContent("comparison/test2.txt", "Hello World!")
+	testHelper.CreateTestFileWithContent("comparison/test3.txt", "Go is an open source programming language")
 	testHelper.CreateTestFileWithContent("comparison/dir1/test.txt", "Lorem ipsum, dolor sit amet.")
 }
 
@@ -230,17 +231,21 @@ func test_Comparer_Compare(t *testing.T) {
 	expectedFingerprints := getExpectedFingerprintsForComparison()
 	fp1 := createFingerprint("test.txt", "1c291ca3", "crc32")
 	fp2 := createFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
+	fp3 := createFingerprint("some-deleted-file", "f32ab44c", "crc32")
 	memoryDatabase := dal.NewMemoryDatabase()
 	memoryDatabase.AddFingerprint(fp1)
 	memoryDatabase.AddFingerprint(fp2)
+	memoryDatabase.AddFingerprint(fp3)
 	testPath := testHelper.GetTestPath("comparison")
-	comparer := Comparer{memoryDatabase, testPath, testPath}
+	comparer := NewComparer(memoryDatabase, testPath, testPath)
 
 	// Act.
 	comparer.Compare("crc32")
 
 	// Assert.
 	testCalculatedFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
+	testComparerMissingFiles(t, &comparer)
+	testComparerNewFiles(t, &comparer)
 }
 
 func tearDownOtherTests() {
@@ -278,6 +283,20 @@ func testChecksumCalculation(t *testing.T, algorithm string, expectedChecksum st
 	}
 }
 
+func testComparerMissingFiles(t *testing.T, comparer *Comparer) {
+
+	if !testHelper.HasStringItems(comparer.Report.MissingFiles, "some-deleted-file") {
+		t.Errorf("File should be marked as missing: \"some-deleted-file\".")
+	}
+}
+
+func testComparerNewFiles(t *testing.T, comparer *Comparer) {
+
+	if !testHelper.HasStringItems(comparer.Report.NewFiles, "test3.txt") {
+		t.Errorf("File should be marked as new: \"test3.txt\".")
+	}
+}
+
 func createFingerprint(filename string, checksum string, algorithm string) *dal.Fingerprint {
 
 	checksumBytes, err := hex.DecodeString(checksum)
@@ -308,8 +327,9 @@ func getExpectedFingerprintsForBasicCalculation() *list.List {
 func getExpectedFingerprintsForComparison() *list.List {
 
 	fp1 := createFingerprint("test2.txt", "1c291ca3", "crc32")
-	fp2 := createFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
-	expectedFingerprints := createList(fp1, fp2)
+	fp2 := createFingerprint("test3.txt", "1881d07b", "crc32")
+	fp3 := createFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
+	expectedFingerprints := createList(fp1, fp2, fp3)
 
 	return expectedFingerprints
 }

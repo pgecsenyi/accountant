@@ -2,8 +2,6 @@ package bll
 
 import (
 	"dal"
-	"fmt"
-	"log"
 	"path"
 	"util"
 )
@@ -13,24 +11,25 @@ type Verifier struct {
 	Db             dal.Database
 	InputChecksums string
 	BasePath       string
-	countInvalid   int
-	countMissing   int
+	Report         *VerifierReport
 }
 
 // NewVerifier Instantiates a new Verifier object.
 func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifier {
 
 	basePath = util.NormalizePath(basePath)
+	report := NewVerifierReport()
 
-	return Verifier{db, inputChecksums, basePath, 0, 0}
+	return Verifier{db, inputChecksums, basePath, report}
 }
 
 // Verify Verifies checksums in the given file.
 func (verifier *Verifier) Verify(verifyNamesOnly bool) {
 
 	verifier.Db.LoadFingerprints()
+	verifier.Report.CountAll = verifier.Db.GetFingerprints().Len()
 	verifier.verifyEntries(verifyNamesOnly)
-	verifier.printSummary(verifyNamesOnly)
+	verifier.Report.LogSummary(verifyNamesOnly)
 }
 
 func (verifier *Verifier) verifyEntries(verifyNamesOnly bool) {
@@ -48,8 +47,7 @@ func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint, verifyNameOn
 	fullPath := path.Join(verifier.BasePath, fingerprint.Filename)
 
 	if !util.CheckIfFileExists(fullPath) {
-		log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
-		verifier.countMissing++
+		verifier.Report.AddMissingFile(fingerprint.Filename)
 	} else if !verifyNameOnly {
 		verifier.verifyChecksum(fingerprint, fullPath)
 	}
@@ -61,23 +59,6 @@ func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath 
 	checksum := hasher.CalculateChecksum(fullPath)
 
 	if !util.CompareByteSlices(checksum, fingerprint.Checksum) {
-		log.Println(fmt.Sprintf("Invalid: %s", fingerprint.Filename))
-		verifier.countInvalid++
-	}
-}
-
-func (verifier *Verifier) printSummary(verifyNamesOnly bool) {
-
-	countAll := verifier.Db.GetFingerprints().Len()
-	countValid := countAll - verifier.countMissing
-
-	if verifyNamesOnly {
-		log.Println(fmt.Sprintf(
-			"Summary: %d/%d exist(s), %d missing.",
-			countValid, countAll, verifier.countMissing))
-	} else {
-		log.Println(fmt.Sprintf(
-			"Summary: %d/%d valid, %d missing, %d invalid.",
-			countValid, countAll, verifier.countMissing, verifier.countInvalid))
+		verifier.Report.AddCorruptFile(fingerprint.Filename)
 	}
 }

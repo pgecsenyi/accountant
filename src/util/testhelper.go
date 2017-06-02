@@ -1,6 +1,7 @@
 package util
 
 import (
+	"container/list"
 	"os"
 	"path"
 	"testing"
@@ -87,9 +88,28 @@ func (th *TestHelper) HasFileInfoValues(files []os.FileInfo, values ...string) b
 	return true
 }
 
-func (th *TestHelper) HasStringValues(list []string, values ...string) bool {
+func (th *TestHelper) HasStringItems(targetList *list.List, values ...string) bool {
 
-	for _, item := range list {
+	for element := targetList.Front(); element != nil; element = element.Next() {
+		filename := element.Value.(string)
+		match := false
+		for _, value := range values {
+			if filename == value {
+				match = true
+				break
+			}
+		}
+		if !match {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (th *TestHelper) HasStringValues(targetSlice []string, values ...string) bool {
+
+	for _, item := range targetSlice {
 		match := false
 		for _, value := range values {
 			if item == value {

@@ -4,8 +4,6 @@ import (
 	"container/list"
 	"dal"
 	"encoding/hex"
-	"fmt"
-	"log"
 	"util"
 )
 
@@ -14,6 +12,15 @@ type Comparer struct {
 	Db             dal.Database
 	InputDirectory string
 	BasePath       string
+	Report         *ComparerReport
+}
+
+// NewComparer Instantiates a new Comparer object.
+func NewComparer(db dal.Database, inputDirectory string, basePath string) Comparer {
+
+	comparerReport := NewComparerReport()
+
+	return Comparer{db, inputDirectory, basePath, comparerReport}
 }
 
 // Compare Verifies and stores changes in the given directory based on the checksums calculated earlier.
@@ -64,7 +71,7 @@ func (comparer *Comparer) compareAndSaveResults(oldFingerprints *list.List, newF
 		comparer.processMatch(fingerprint, checksum, matchingFingerprint, foundFingerprints)
 	}
 
-	printRemovedFiles(cache, foundFingerprints)
+	comparer.collectMissingFiles(cache, foundFingerprints)
 }
 
 func (comparer *Comparer) processMatch(
@@ -72,11 +79,21 @@ func (comparer *Comparer) processMatch(
 	matchingFingerprint *dal.Fingerprint, foundFingerprints map[string]bool) {
 
 	if matchingFingerprint == nil {
-		log.Println(fmt.Sprintf("New: %s", fingerprint.Filename))
+		comparer.Report.AddNewFile(fingerprint.Filename)
 	} else {
 		comparer.Db.AddNamePair(&dal.NamePair{fingerprint.Filename, matchingFingerprint.Filename})
 		fingerprint.CreatedAt = matchingFingerprint.CreatedAt
 		foundFingerprints[checksum] = true
+	}
+}
+
+func (comparer *Comparer) collectMissingFiles(oldFingerprints map[string]*dal.Fingerprint, foundFingerprints map[string]bool) {
+
+	for hash, fingerprint := range oldFingerprints {
+		hasFound := foundFingerprints[hash]
+		if !hasFound {
+			comparer.Report.AddMissingFile(fingerprint.Filename)
+		}
 	}
 }
 
@@ -91,14 +108,4 @@ func buildFingerprintCache(fingerprints *list.List) map[string]*dal.Fingerprint 
 	}
 
 	return cache
-}
-
-func printRemovedFiles(oldFingerprints map[string]*dal.Fingerprint, foundFingerprints map[string]bool) {
-
-	for hash, fingerprint := range oldFingerprints {
-		hasFound := foundFingerprints[hash]
-		if !hasFound {
-			log.Println(fmt.Sprintf("Missing: %s", fingerprint.Filename))
-		}
-	}
 }

@@ -84,6 +84,9 @@ func Test_Other(t *testing.T) {
 	t.Run("Calculator_Calculate_All", test_Calculator_All)
 	t.Run("Calculator_Calculate_MissingOnly", test_Calculator_MissingOnly)
 	t.Run("Comparer_Compare", test_Comparer_Compare)
+	t.Run("Importer_Convert", test_Importer_Convert)
+	t.Run("Verifier_Verify", test_Verifier_Verify)
+	t.Run("Verifier_Verify_NamesOnly", test_Verifier_Verify_NamesOnly)
 	tearDownOtherTests()
 }
 
@@ -101,6 +104,29 @@ func setupOtherTests() {
 	testHelper.CreateTestFileWithContent("comparison/test2.txt", "Hello World!")
 	testHelper.CreateTestFileWithContent("comparison/test3.txt", "Go is an open source programming language")
 	testHelper.CreateTestFileWithContent("comparison/dir1/test.txt", "Lorem ipsum, dolor sit amet.")
+
+	testHelper.CreateTestDirectory("import")
+	testHelper.CreateTestDirectory("import/subdir")
+	testHelper.CreateTestFileWithContent(
+		"import/test.sha",
+		"15dfaa952a85ad9a458013fa2fc3bdc807d34e7f *textfile.txt"+
+			"\r\n1a0041decc7147a86a01652e92a9027775d472c4 *presentation.odp")
+	testHelper.CreateTestFileWithContent("import/almost-empty.md5", " ")
+	testHelper.CreateTestFileWithContent(
+		"import/subdir/md5.md5",
+		"845178f3c9e7ec71f23e01e2187a1867  compressed.tar.gz\n8d5f2e17f783cc066de6e02adc74566e  executable")
+	testHelper.CreateTestFileWithContent(
+		"import/subdir/something.sfv",
+		"; some header\r\nanimage.jpg AFB25773\r\nanotherimage.png D7B3144F")
+	testHelper.CreateTestFileWithContent(
+		"import/CHK.sha256",
+		"357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50 *source.c")
+	testHelper.CreateTestFileWithContent(
+		"import/subdir/sh.sha512",
+		"312c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41 *important.odt"+
+			"\r\n3c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5 *wrongentry.7z"+
+			"\r\nsomething"+
+			"\r\n312s3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41 *another_wrong_entry.bad")
 }
 
 func test_Hasher_CalculateChecksum_Crc32(t *testing.T) {
@@ -184,7 +210,7 @@ func test_Hasher_CalculateFingerprints(t *testing.T) {
 	if fingerprints.Len() != 2 {
 		t.Errorf("Wrong number of items in result set: %d.", fingerprints.Len())
 	}
-	testCalculatedFingerprints(t, fingerprints, expectedFingerprints)
+	testFingerprints(t, fingerprints, expectedFingerprints)
 }
 
 func test_Calculator_All(t *testing.T) {
@@ -202,7 +228,7 @@ func test_Calculator_All(t *testing.T) {
 	if memoryDatabase.Fingerprints.Len() != 2 {
 		t.Errorf("Wrong number of items in result set: %d.", memoryDatabase.Fingerprints.Len())
 	}
-	testCalculatedFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
+	testFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
 }
 
 func test_Calculator_MissingOnly(t *testing.T) {
@@ -222,7 +248,7 @@ func test_Calculator_MissingOnly(t *testing.T) {
 	if memoryDatabase.Fingerprints.Len() != 1 {
 		t.Errorf("Wrong number of items in result set: %d.", memoryDatabase.Fingerprints.Len())
 	}
-	testCalculatedFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
+	testFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
 }
 
 func test_Comparer_Compare(t *testing.T) {
@@ -243,9 +269,75 @@ func test_Comparer_Compare(t *testing.T) {
 	comparer.Compare("crc32")
 
 	// Assert.
-	testCalculatedFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
+	testFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints)
 	testComparerMissingFiles(t, &comparer)
 	testComparerNewFiles(t, &comparer)
+}
+
+func test_Verifier_Verify(t *testing.T) {
+
+	// Arrange.
+	fp1 := createFingerprint("test.txt", "1d291cf2", "crc32")
+	fp2 := createFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
+	fp3 := createFingerprint("hello.world", "a1b2c3d4", "crc32")
+	memoryDatabase := dal.NewMemoryDatabase()
+	memoryDatabase.AddFingerprint(fp1)
+	memoryDatabase.AddFingerprint(fp2)
+	memoryDatabase.AddFingerprint(fp3)
+	testPath := testHelper.GetTestPath("calculation")
+	verifier := NewVerifier(memoryDatabase, "calculation", testPath)
+
+	// Act.
+	verifier.Verify(false)
+
+	// Assert.
+	if !testHelper.HasStringItems(verifier.Report.CorruptFiles, "test.txt", "dir1/test.txt") {
+		t.Error("File should be marked as corrupt: \"test.txt\", \"dir1/test.txt\".")
+	}
+	if !testHelper.HasStringItems(verifier.Report.MissingFiles, "hello.world") {
+		t.Error("File should be marked as missing: \"hello.world\".")
+	}
+}
+
+func test_Verifier_Verify_NamesOnly(t *testing.T) {
+
+	// Arrange.
+	fp1 := createFingerprint("test.txt", "1d291cf2", "crc32")
+	fp2 := createFingerprint("hello.world", "a1b2c3d4", "crc32")
+	memoryDatabase := dal.NewMemoryDatabase()
+	memoryDatabase.AddFingerprint(fp1)
+	memoryDatabase.AddFingerprint(fp2)
+	testPath := testHelper.GetTestPath("calculation")
+	verifier := NewVerifier(memoryDatabase, testPath, testPath)
+
+	// Act.
+	verifier.Verify(true)
+
+	// Assert.
+	if verifier.Report.CorruptFiles.Len() != 0 {
+		t.Error("Checksum verification is not supposed to be performed this time.")
+	}
+	if !testHelper.HasStringItems(verifier.Report.MissingFiles, "hello.world") {
+		t.Error("File should be marked as missing: \"hello.world\".")
+	}
+}
+
+func test_Importer_Convert(t *testing.T) {
+
+	// Arrange.
+	expectedFingerprints := getExpectedFingerprintsForImport()
+	memoryDatabase := dal.NewMemoryDatabase()
+	testPath := testHelper.GetTestPath("import")
+	importer := NewImporter(memoryDatabase, testPath, "")
+
+	// Act.
+	importer.Convert()
+
+	// Assert.
+	if memoryDatabase.GetFingerprints().Len() != 8 {
+		t.Error("Wrong number of database entries.")
+	}
+	testFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints)
 }
 
 func tearDownOtherTests() {
@@ -262,7 +354,7 @@ func testIfEtmContainsText(t *testing.T, etm *effectiveTextMemory, text string, 
 	}
 }
 
-func testCalculatedFingerprints(t *testing.T, fingerprints *list.List, expectedFingerprints *list.List) {
+func testFingerprints(t *testing.T, fingerprints *list.List, expectedFingerprints *list.List) {
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
@@ -286,14 +378,14 @@ func testChecksumCalculation(t *testing.T, algorithm string, expectedChecksum st
 func testComparerMissingFiles(t *testing.T, comparer *Comparer) {
 
 	if !testHelper.HasStringItems(comparer.Report.MissingFiles, "some-deleted-file") {
-		t.Errorf("File should be marked as missing: \"some-deleted-file\".")
+		t.Error("File should be marked as missing: \"some-deleted-file\".")
 	}
 }
 
 func testComparerNewFiles(t *testing.T, comparer *Comparer) {
 
 	if !testHelper.HasStringItems(comparer.Report.NewFiles, "test3.txt") {
-		t.Errorf("File should be marked as new: \"test3.txt\".")
+		t.Error("File should be marked as new: \"test3.txt\".")
 	}
 }
 
@@ -330,6 +422,24 @@ func getExpectedFingerprintsForComparison() *list.List {
 	fp2 := createFingerprint("test3.txt", "1881d07b", "crc32")
 	fp3 := createFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
 	expectedFingerprints := createList(fp1, fp2, fp3)
+
+	return expectedFingerprints
+}
+
+func getExpectedFingerprintsForImport() *list.List {
+
+	fp1 := createFingerprint("textfile.txt", "15dfaa952a85ad9a458013fa2fc3bdc807d34e7f", "sha1")
+	fp2 := createFingerprint("presentation.odp", "1a0041decc7147a86a01652e92a9027775d472c4", "sha1")
+	fp3 := createFingerprint("compressed.tar.gz", "845178f3c9e7ec71f23e01e2187a1867", "md5")
+	fp4 := createFingerprint("executable", "8d5f2e17f783cc066de6e02adc74566e", "md5")
+	fp5 := createFingerprint("animage.jpg", "afb25773", "crc32")
+	fp6 := createFingerprint("anotherimage.png", "d7b3144f", "crc32")
+	fp7 := createFingerprint("source.c", "357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50", "sha256")
+	fp8 := createFingerprint(
+		"important.odt",
+		"312c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41",
+		"sha512")
+	expectedFingerprints := createList(fp1, fp2, fp3, fp4, fp5, fp6, fp7, fp8)
 
 	return expectedFingerprints
 }

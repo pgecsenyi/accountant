@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// ComparerReport Stores the otherwise not persisted result of comparison.
+// ComparerReport Stores statistics of a comparison process.
 type ComparerReport struct {
 	MissingFiles *list.List
 	NewFiles     *list.List

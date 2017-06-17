@@ -328,7 +328,8 @@ func test_Importer_Convert(t *testing.T) {
 	expectedFingerprints := getExpectedFingerprintsForImport()
 	memoryDatabase := dal.NewMemoryDatabase()
 	testPath := testHelper.GetTestPath("import")
-	importer := NewImporter(memoryDatabase, testPath, "")
+	outputChecksums := testHelper.GetTestPath("import/out.csv")
+	importer := NewImporter(memoryDatabase, testPath, outputChecksums)
 
 	// Act.
 	importer.Convert()
@@ -336,6 +337,10 @@ func test_Importer_Convert(t *testing.T) {
 	// Assert.
 	if memoryDatabase.GetFingerprints().Len() != 8 {
 		t.Error("Wrong number of database entries.")
+	}
+	testFile := testHelper.GetTestPath("import/subdir/sh.sha512")
+	if importer.Report.GetInvalidEntryCount(testFile) != 3 {
+		t.Errorf("Wrong number of invalid entries for file \"%s\".", testFile)
 	}
 	testFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints)
 }

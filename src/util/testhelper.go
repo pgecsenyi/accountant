@@ -18,6 +18,7 @@ func NewTestHelper() TestHelper {
 	return TestHelper{"test"}
 }
 
+// AssertPanic Asserts if the given function panics.
 func (th *TestHelper) AssertPanic(t *testing.T, f func()) {
 
 	defer func() {
@@ -29,29 +30,26 @@ func (th *TestHelper) AssertPanic(t *testing.T, f func()) {
 	f()
 }
 
+// CleanUp Deletes all files in test folder as well the test folder itself.
 func (th *TestHelper) CleanUp() {
 
 	os.RemoveAll(th.testFolder)
 }
 
+// CreateTestDirectory Creates a test directory under the root path.
 func (th *TestHelper) CreateTestDirectory(directoryPath string) {
 
 	os.Mkdir(th.GetTestPath(directoryPath), 0777)
 }
 
+// CreateTestFile Creates a test file.
 func (th *TestHelper) CreateTestFile(filePath string) {
 
 	createdFile, _ := os.Create(th.GetTestPath(filePath))
 	createdFile.Close()
 }
 
-func (th *TestHelper) CreateTestRootDirectory() {
-
-	if !CheckIfDirectoryExists(th.testFolder) {
-		os.Mkdir(th.testFolder, 0777)
-	}
-}
-
+// CreateTestFileWithContent Creates a test file with the given content.
 func (th *TestHelper) CreateTestFileWithContent(filePath string, content string) {
 
 	outputFile, _ := os.Create(th.GetTestPath(filePath))
@@ -60,19 +58,30 @@ func (th *TestHelper) CreateTestFileWithContent(filePath string, content string)
 	outputFile.WriteString(content)
 }
 
+// CreateTestRootDirectory Creates the root test folder.
+func (th *TestHelper) CreateTestRootDirectory() {
+
+	if !CheckIfDirectoryExists(th.testFolder) {
+		os.Mkdir(th.testFolder, 0777)
+	}
+}
+
+// GetTestPath Gets the path for the given file under the test folder.
 func (th *TestHelper) GetTestPath(filePath string) string {
 
 	return path.Join(th.testFolder, filePath)
 }
 
+// GetTestRootDirectory Gets the path of the root test folder.
 func (th *TestHelper) GetTestRootDirectory() string {
 
 	return th.testFolder
 }
 
-func (th *TestHelper) HasFileInfoValues(files []os.FileInfo, values ...string) bool {
+// HasFileInfoValues Checks whether the given slice has all the os.FileInfo values provided.
+func (th *TestHelper) HasFileInfoValues(targetSlice []os.FileInfo, values ...string) bool {
 
-	for _, file := range files {
+	for _, file := range targetSlice {
 		match := false
 		for _, value := range values {
 			if file.Name() == value {
@@ -88,6 +97,7 @@ func (th *TestHelper) HasFileInfoValues(files []os.FileInfo, values ...string) b
 	return true
 }
 
+// HasStringItems Checks whether the given list has all the string values provided.
 func (th *TestHelper) HasStringItems(targetList *list.List, values ...string) bool {
 
 	for element := targetList.Front(); element != nil; element = element.Next() {
@@ -107,6 +117,7 @@ func (th *TestHelper) HasStringItems(targetList *list.List, values ...string) bo
 	return true
 }
 
+// HasStringValues Checks whether the given slice has all the string values provided.
 func (th *TestHelper) HasStringValues(targetSlice []string, values ...string) bool {
 
 	for _, item := range targetSlice {

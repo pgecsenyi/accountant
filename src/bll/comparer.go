@@ -18,9 +18,9 @@ type Comparer struct {
 // NewComparer Instantiates a new Comparer object.
 func NewComparer(db dal.Database, inputDirectory string, basePath string) Comparer {
 
-	comparerReport := NewComparerReport()
+	report := NewComparerReport()
 
-	return Comparer{db, inputDirectory, basePath, comparerReport}
+	return Comparer{db, inputDirectory, basePath, report}
 }
 
 // Compare Verifies and stores changes in the given directory based on the checksums calculated earlier.

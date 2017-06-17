@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-// VerifierReport Stores the otherwise not persisted result of comparison.
+// VerifierReport Stores statistics of a verification process.
 type VerifierReport struct {
 	CountAll     int
 	CorruptFiles *list.List

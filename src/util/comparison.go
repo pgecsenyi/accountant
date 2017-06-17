@@ -1,5 +1,6 @@
 package util
 
+// CompareByteSlices Checks whether the two slices of bytes are the same.
 func CompareByteSlices(slice1 []byte, slice2 []byte) bool {
 
 	if (slice1 == nil && slice2 != nil) || (slice1 != nil && slice2 == nil) {

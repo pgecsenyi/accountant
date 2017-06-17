@@ -5,7 +5,6 @@ import (
 	"dal"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"regexp"
@@ -19,6 +18,7 @@ type Importer struct {
 	Db               dal.Database
 	InputDirectory   string
 	OutputChecksums  string
+	Report           *ImporterReport
 	patterns         importEntryPatterns
 	fingerprintProto *dal.Fingerprint
 }
@@ -36,8 +36,9 @@ func NewImporter(db dal.Database, inputDirectory string, outputChecksums string)
 
 	patterns := importEntryPatterns{nil, nil, nil, nil, nil}
 	fingerprintProto := new(dal.Fingerprint)
+	report := NewImporterReport()
 
-	return Importer{db, inputDirectory, outputChecksums, patterns, fingerprintProto}
+	return Importer{db, inputDirectory, outputChecksums, report, patterns, fingerprintProto}
 }
 
 // Convert Converts checksum data produced by third party utilities to CSV.
@@ -96,20 +97,16 @@ func (importer *Importer) parseFile(filePath string, pattern *regexp.Regexp, com
 
 	idxFilename, idxChecksum := getFilenameChecksumIndices(pattern.SubexpNames())
 
-	numberOfInvalidLines := 0
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if !importer.parseLine(scanner.Text(), pattern, commentChar, idxFilename, idxChecksum) {
-			numberOfInvalidLines++
+			importer.Report.IncreaseInvalidEntryCount(filePath)
 		}
 	}
 
 	util.CheckErr(scanner.Err(), "Error reading file "+filePath+".")
 
-	if numberOfInvalidLines != 0 {
-		message := fmt.Sprintf("There is/are %d invalid line(s) in %s.", numberOfInvalidLines, filePath)
-		log.Println(message)
-	}
+	importer.Report.LogSummaryForFile(filePath)
 }
 
 func (importer *Importer) parseLine(

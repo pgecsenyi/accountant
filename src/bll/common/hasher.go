@@ -1,4 +1,4 @@
-package bll
+package common
 
 import (
 	"container/list"

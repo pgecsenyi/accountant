@@ -1,6 +1,7 @@
 package bll
 
 import (
+	"bll/common"
 	"container/list"
 	"dal"
 	"path"
@@ -12,14 +13,14 @@ type Calculator struct {
 	Db                dal.Database
 	InputDirectory    string
 	BasePath          string
-	hasher            Hasher
+	hasher            common.Hasher
 	effectiveBasePath string
 }
 
 // NewCalculator Instantiates a new Calculator object.
 func NewCalculator(db dal.Database, inputDirectory string, algorithm string, basePath string) Calculator {
 
-	hasher := NewHasher(algorithm)
+	hasher := common.NewHasher(algorithm)
 	effectiveBasePath := util.TrimPath(inputDirectory, basePath)
 
 	return Calculator{db, inputDirectory, basePath, hasher, effectiveBasePath}
@@ -56,9 +57,9 @@ func (calculator *Calculator) calculateFingerprintsForMissingFiles(files []strin
 	return fingerprints
 }
 
-func (calculator *Calculator) loadMissingNames() *effectiveTextMemory {
+func (calculator *Calculator) loadMissingNames() *common.EffectiveTextMemory {
 
-	etm := newEffectiveTextMemory()
+	etm := common.NewEffectiveTextMemory()
 	calculator.Db.LoadNamesFromFingeprints(etm)
 	etm.ClearCache()
 
@@ -66,7 +67,7 @@ func (calculator *Calculator) loadMissingNames() *effectiveTextMemory {
 }
 
 func (calculator *Calculator) addFingerprintIfFileIsMissing(
-	file string, etm *effectiveTextMemory, fingerprints *list.List) {
+	file string, etm *common.EffectiveTextMemory, fingerprints *list.List) {
 
 	fullPath := path.Join(calculator.effectiveBasePath, file)
 	if !etm.ContainsText(fullPath) {

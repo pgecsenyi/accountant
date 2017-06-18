@@ -2,8 +2,9 @@
 /bin/
 
 # Test files.
-/src/test/test
+/src/*/testfiles
 /pkg/*/application.a
 /pkg/*/bll.a
+/pkg/*/bll/*.a
 /pkg/*/dal.a
 /pkg/*/util.a

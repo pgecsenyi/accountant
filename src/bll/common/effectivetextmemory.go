@@ -1,4 +1,4 @@
-package bll
+package common
 
 import (
 	"encoding/hex"
@@ -6,7 +6,8 @@ import (
 	"hash/fnv"
 )
 
-type effectiveTextMemory struct {
+// EffectiveTextMemory Stores hashes of strings and helps deciding whether it has already seen a string or not.
+type EffectiveTextMemory struct {
 	CountAll        int
 	CountCollisions int
 	UseCache        bool
@@ -15,28 +16,31 @@ type effectiveTextMemory struct {
 	textCache       map[string]bool
 }
 
-// NewNameHashStorage Instantiates a new NameHashStorage object.
-func newEffectiveTextMemory() *effectiveTextMemory {
+// NewEffectiveTextMemory Instantiates a new EffectiveTextMemory object.
+func NewEffectiveTextMemory() *EffectiveTextMemory {
 
 	storage := make(map[string]bool)
 	textCache := make(map[string]bool)
 
-	return &effectiveTextMemory{0, 0, true, fnv.New32a(), storage, textCache}
+	return &EffectiveTextMemory{0, 0, true, fnv.New32a(), storage, textCache}
 }
 
-func (etm *effectiveTextMemory) ClearCache() {
+// ClearCache Clears the cache.
+func (etm *EffectiveTextMemory) ClearCache() {
 
 	etm.textCache = make(map[string]bool)
 }
 
-func (etm *effectiveTextMemory) ContainsText(text string) bool {
+// ContainsText Checks if the given string is memorized.
+func (etm *EffectiveTextMemory) ContainsText(text string) bool {
 
 	textHash := etm.calculateHash(text)
 
 	return etm.storage[textHash]
 }
 
-func (etm *effectiveTextMemory) Write(text string) {
+// Write Memorizes the given string.
+func (etm *EffectiveTextMemory) Write(text string) {
 
 	if etm.UseCache {
 		if etm.textCache[text] {
@@ -49,7 +53,7 @@ func (etm *effectiveTextMemory) Write(text string) {
 	etm.storeHash(textHash)
 }
 
-func (etm *effectiveTextMemory) calculateHash(text string) string {
+func (etm *EffectiveTextMemory) calculateHash(text string) string {
 
 	textBytes := []byte(text)
 	textHashBytes := etm.hashFunc.Sum(textBytes)
@@ -58,7 +62,7 @@ func (etm *effectiveTextMemory) calculateHash(text string) string {
 	return textHash
 }
 
-func (etm *effectiveTextMemory) storeHash(textHash string) {
+func (etm *EffectiveTextMemory) storeHash(textHash string) {
 
 	etm.CountAll++
 

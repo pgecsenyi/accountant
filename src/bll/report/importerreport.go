@@ -1,4 +1,4 @@
-package bll
+package report
 
 import (
 	"fmt"

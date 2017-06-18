@@ -1,6 +1,8 @@
 package bll
 
 import (
+	"bll/common"
+	"bll/report"
 	"dal"
 	"path"
 	"util"
@@ -11,14 +13,14 @@ type Verifier struct {
 	Db             dal.Database
 	InputChecksums string
 	BasePath       string
-	Report         *VerifierReport
+	Report         *report.VerifierReport
 }
 
 // NewVerifier Instantiates a new Verifier object.
 func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifier {
 
 	basePath = util.NormalizePath(basePath)
-	report := NewVerifierReport()
+	report := report.NewVerifierReport()
 
 	return Verifier{db, inputChecksums, basePath, report}
 }
@@ -55,7 +57,7 @@ func (verifier *Verifier) verifyEntry(fingerprint *dal.Fingerprint, verifyNameOn
 
 func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath string) {
 
-	hasher := NewHasher(fingerprint.Algorithm)
+	hasher := common.NewHasher(fingerprint.Algorithm)
 	checksum := hasher.CalculateChecksum(fullPath)
 
 	if !util.CompareByteSlices(checksum, fingerprint.Checksum) {

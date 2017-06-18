@@ -1,6 +1,8 @@
 package bll
 
 import (
+	"bll/common"
+	"bll/report"
 	"container/list"
 	"dal"
 	"encoding/hex"
@@ -12,13 +14,13 @@ type Comparer struct {
 	Db             dal.Database
 	InputDirectory string
 	BasePath       string
-	Report         *ComparerReport
+	Report         *report.ComparerReport
 }
 
 // NewComparer Instantiates a new Comparer object.
 func NewComparer(db dal.Database, inputDirectory string, basePath string) Comparer {
 
-	report := NewComparerReport()
+	report := report.NewComparerReport()
 
 	return Comparer{db, inputDirectory, basePath, report}
 }
@@ -46,7 +48,7 @@ func (comparer *Comparer) loadOldFingerprints() *list.List {
 
 func (comparer *Comparer) calculateNewFingerprints(algorithm string) *list.List {
 
-	hasher := NewHasher(algorithm)
+	hasher := common.NewHasher(algorithm)
 	effectiveBasePath := comparer.getEffectiveBasePath()
 	files := util.ListFilesRecursively(comparer.InputDirectory)
 	newFingerprints := hasher.CalculateFingerprints(comparer.InputDirectory, effectiveBasePath, files)

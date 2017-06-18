@@ -15,7 +15,7 @@ type TestHelper struct {
 // NewTestHelper Instantiates a new NewTestHelper object.
 func NewTestHelper() TestHelper {
 
-	return TestHelper{"test"}
+	return TestHelper{"testfiles"}
 }
 
 // AssertPanic Asserts if the given function panics.

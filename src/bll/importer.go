@@ -1,6 +1,7 @@
 package bll
 
 import (
+	"bll/report"
 	"bufio"
 	"dal"
 	"encoding/hex"
@@ -18,7 +19,7 @@ type Importer struct {
 	Db               dal.Database
 	InputDirectory   string
 	OutputChecksums  string
-	Report           *ImporterReport
+	Report           *report.ImporterReport
 	patterns         importEntryPatterns
 	fingerprintProto *dal.Fingerprint
 }
@@ -36,7 +37,7 @@ func NewImporter(db dal.Database, inputDirectory string, outputChecksums string)
 
 	patterns := importEntryPatterns{nil, nil, nil, nil, nil}
 	fingerprintProto := new(dal.Fingerprint)
-	report := NewImporterReport()
+	report := report.NewImporterReport()
 
 	return Importer{db, inputDirectory, outputChecksums, report, patterns, fingerprintProto}
 }

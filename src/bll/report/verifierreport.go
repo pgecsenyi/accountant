@@ -23,6 +23,7 @@ func NewVerifierReport() *VerifierReport {
 func (vr *VerifierReport) AddCorruptFile(filename string) {
 
 	vr.CorruptFiles.PushFront(filename)
+	vr.CountAll++
 	log.Println(fmt.Sprintf("Corrupt: %s", filename))
 }
 
@@ -30,7 +31,14 @@ func (vr *VerifierReport) AddCorruptFile(filename string) {
 func (vr *VerifierReport) AddMissingFile(filename string) {
 
 	vr.MissingFiles.PushFront(filename)
+	vr.CountAll++
 	log.Println(fmt.Sprintf("Missing: %s", filename))
+}
+
+// AddValidFile Logs that the given file is valid.
+func (vr *VerifierReport) AddValidFile(filename string) {
+
+	vr.CountAll++
 }
 
 // LogSummary Prints a summary report to the log.

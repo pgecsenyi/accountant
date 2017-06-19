@@ -29,9 +29,8 @@ func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifi
 func (verifier *Verifier) Verify(verifyNamesOnly bool) {
 
 	verifier.Db.LoadFingerprints()
-	verifier.Report.CountAll = verifier.Db.GetFingerprints().Len()
 	verifier.verifyEntries(verifyNamesOnly)
-	verifier.Report.LogSummary(verifyNamesOnly)
+	verifier.Report.LogSummary(!verifyNamesOnly)
 }
 
 func (verifier *Verifier) verifyEntries(verifyNamesOnly bool) {
@@ -60,7 +59,9 @@ func (verifier *Verifier) verifyChecksum(fingerprint *dal.Fingerprint, fullPath 
 	hasher := common.NewHasher(fingerprint.Algorithm)
 	checksum := hasher.CalculateChecksum(fullPath)
 
-	if !util.CompareByteSlices(checksum, fingerprint.Checksum) {
+	if util.CompareByteSlices(checksum, fingerprint.Checksum) {
+		verifier.Report.AddValidFile(fingerprint.Filename)
+	} else {
 		verifier.Report.AddCorruptFile(fingerprint.Filename)
 	}
 }

@@ -5,33 +5,33 @@ import (
 	"log"
 )
 
-// ImporterReport Stores statistics of an import process.
-type ImporterReport struct {
+// ImportReport Stores statistics of an import process.
+type ImportReport struct {
 	invalidEntryCountByFile map[string]int
 }
 
-// NewImporterReport Instantiates a new ImporterReport object.
-func NewImporterReport() *ImporterReport {
+// NewImportReport Instantiates a new ImportReport object.
+func NewImportReport() *ImportReport {
 
 	var invalidEntryCountByFile = make(map[string]int)
 
-	return &ImporterReport{invalidEntryCountByFile}
+	return &ImportReport{invalidEntryCountByFile}
 }
 
 // GetInvalidEntryCount Gets the number of invalid entries in the given file.
-func (ir *ImporterReport) GetInvalidEntryCount(filename string) int {
+func (ir *ImportReport) GetInvalidEntryCount(filename string) int {
 
 	return ir.invalidEntryCountByFile[filename]
 }
 
 // IncreaseInvalidEntryCount Increments the invalid entry count for the given file by one.
-func (ir *ImporterReport) IncreaseInvalidEntryCount(filename string) {
+func (ir *ImportReport) IncreaseInvalidEntryCount(filename string) {
 
 	ir.invalidEntryCountByFile[filename]++
 }
 
 // LogSummaryForFile Prints a summary report for the given file to the log.
-func (ir *ImporterReport) LogSummaryForFile(filename string) {
+func (ir *ImportReport) LogSummaryForFile(filename string) {
 
 	numberOfInvalidLines := ir.invalidEntryCountByFile[filename]
 	if numberOfInvalidLines != 0 {

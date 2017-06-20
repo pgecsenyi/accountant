@@ -6,9 +6,9 @@ import (
 	"util"
 )
 
-var verifierReportTestHelper = util.NewTestHelper()
+var verificationReportTestHelper = util.NewTestHelper()
 
-func TestVerifierReport(t *testing.T) {
+func TestVerificationReport(t *testing.T) {
 
 	t.Run("AddCorruptFile", testVrAddCorruptFile)
 	t.Run("AddMissingFile", testVrAddMissingFile)
@@ -17,7 +17,7 @@ func TestVerifierReport(t *testing.T) {
 
 func testVrAddCorruptFile(t *testing.T) {
 
-	vr := NewVerifierReport()
+	vr := NewVerificationReport()
 	testItem1 := "somedirectory/sumesubdirectory/somefile.txt"
 	testItem2 := "someotherfile.txt"
 
@@ -26,14 +26,14 @@ func testVrAddCorruptFile(t *testing.T) {
 
 	assertAllCount(t, vr, 2)
 	assertListLength(t, vr.MissingFiles, "missing", 0)
-	if !verifierReportTestHelper.HasStringItems(vr.CorruptFiles, testItem1, testItem2) {
+	if !verificationReportTestHelper.HasStringItems(vr.CorruptFiles, testItem1, testItem2) {
 		t.Error("The list of corrupt files is incomplete.")
 	}
 }
 
 func testVrAddMissingFile(t *testing.T) {
 
-	vr := NewVerifierReport()
+	vr := NewVerificationReport()
 	testItem1 := "somedirectory/sumesubdirectory/somefile.txt"
 	testItem2 := "someotherfile.txt"
 
@@ -42,14 +42,14 @@ func testVrAddMissingFile(t *testing.T) {
 
 	assertAllCount(t, vr, 2)
 	assertListLength(t, vr.CorruptFiles, "corrupt", 0)
-	if !verifierReportTestHelper.HasStringItems(vr.MissingFiles, testItem1, testItem2) {
+	if !verificationReportTestHelper.HasStringItems(vr.MissingFiles, testItem1, testItem2) {
 		t.Error("The list of missing files is incomplete.")
 	}
 }
 
 func testVrAddValidFile(t *testing.T) {
 
-	vr := NewVerifierReport()
+	vr := NewVerificationReport()
 	testItem1 := "somedirectory/sumesubdirectory/somefile.txt"
 	testItem2 := "someotherfile.txt"
 
@@ -61,7 +61,7 @@ func testVrAddValidFile(t *testing.T) {
 	assertListLength(t, vr.MissingFiles, "missing", 0)
 }
 
-func assertAllCount(t *testing.T, vr *VerifierReport, expectedCount int) {
+func assertAllCount(t *testing.T, vr *VerificationReport, expectedCount int) {
 
 	if vr.CountAll != expectedCount {
 		t.Errorf("Wrong number of all files: %d (expected: %d).", vr.CountAll, expectedCount)

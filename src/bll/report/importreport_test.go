@@ -2,14 +2,14 @@ package report
 
 import "testing"
 
-func TestImporterReport(t *testing.T) {
+func TestImportReport(t *testing.T) {
 
 	t.Run("IncreaseInvalidEntryCount", testIrIncreaseInvalidEntryCount)
 }
 
 func testIrIncreaseInvalidEntryCount(t *testing.T) {
 
-	ir := NewImporterReport()
+	ir := NewImportReport()
 	testItem1 := "somedirectory/sumesubdirectory/sometext.txt"
 	testItem2 := "somedirectory/someimage.png"
 	testItem3 := "somedoc.odt"
@@ -23,7 +23,7 @@ func testIrIncreaseInvalidEntryCount(t *testing.T) {
 	assertInvalidEntryCount(t, ir, testItem3, 0)
 }
 
-func assertInvalidEntryCount(t *testing.T, ir *ImporterReport, filename string, expectedCount int) {
+func assertInvalidEntryCount(t *testing.T, ir *ImportReport, filename string, expectedCount int) {
 
 	actualCount := ir.GetInvalidEntryCount(filename)
 	if actualCount != expectedCount {

@@ -5,9 +5,9 @@ import (
 	"util"
 )
 
-var comparerReportTestHelper = util.NewTestHelper()
+var comparisonReportTestHelper = util.NewTestHelper()
 
-func TestComparerReport(t *testing.T) {
+func TestComparisonReport(t *testing.T) {
 
 	t.Run("AddMissingFile", testCrAddMissingFile)
 	t.Run("AddNewFile", testCrAddNewFile)
@@ -15,24 +15,24 @@ func TestComparerReport(t *testing.T) {
 
 func testCrAddMissingFile(t *testing.T) {
 
-	cr := NewComparerReport()
+	cr := NewComparisonReport()
 	testItem := "somedirectory/sumesubdirectory/somefile.txt"
 
 	cr.AddMissingFile(testItem)
 
-	if !comparerReportTestHelper.HasStringItems(cr.MissingFiles, testItem) {
+	if !comparisonReportTestHelper.HasStringItems(cr.MissingFiles, testItem) {
 		t.Errorf("%s should be marked as missing.", testItem)
 	}
 }
 
 func testCrAddNewFile(t *testing.T) {
 
-	cr := NewComparerReport()
+	cr := NewComparisonReport()
 	testItem := "somedirectory/sumesubdirectory/somefile.txt"
 
 	cr.AddNewFile(testItem)
 
-	if !comparerReportTestHelper.HasStringItems(cr.NewFiles, testItem) {
+	if !comparisonReportTestHelper.HasStringItems(cr.NewFiles, testItem) {
 		t.Errorf("%s should be marked as missing.", testItem)
 	}
 }

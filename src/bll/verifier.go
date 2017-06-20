@@ -13,14 +13,14 @@ type Verifier struct {
 	Db             dal.Database
 	InputChecksums string
 	BasePath       string
-	Report         *report.VerifierReport
+	Report         *report.VerificationReport
 }
 
 // NewVerifier Instantiates a new Verifier object.
 func NewVerifier(db dal.Database, inputChecksums string, basePath string) Verifier {
 
 	basePath = util.NormalizePath(basePath)
-	report := report.NewVerifierReport()
+	report := report.NewVerificationReport()
 
 	return Verifier{db, inputChecksums, basePath, report}
 }

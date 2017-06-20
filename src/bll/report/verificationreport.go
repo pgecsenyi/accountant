@@ -6,21 +6,21 @@ import (
 	"log"
 )
 
-// VerifierReport Stores statistics of a verification process.
-type VerifierReport struct {
+// VerificationReport Stores statistics of a verification process.
+type VerificationReport struct {
 	CountAll     int
 	CorruptFiles *list.List
 	MissingFiles *list.List
 }
 
-// NewVerifierReport Instantiates a new VerifierReport object.
-func NewVerifierReport() *VerifierReport {
+// NewVerificationReport Instantiates a new VerificationReport object.
+func NewVerificationReport() *VerificationReport {
 
-	return &VerifierReport{0, list.New(), list.New()}
+	return &VerificationReport{0, list.New(), list.New()}
 }
 
 // AddCorruptFile Adds the given file to the list of corrupt files.
-func (vr *VerifierReport) AddCorruptFile(filename string) {
+func (vr *VerificationReport) AddCorruptFile(filename string) {
 
 	vr.CorruptFiles.PushFront(filename)
 	vr.CountAll++
@@ -28,7 +28,7 @@ func (vr *VerifierReport) AddCorruptFile(filename string) {
 }
 
 // AddMissingFile Adds the given file to the list of missing files.
-func (vr *VerifierReport) AddMissingFile(filename string) {
+func (vr *VerificationReport) AddMissingFile(filename string) {
 
 	vr.MissingFiles.PushFront(filename)
 	vr.CountAll++
@@ -36,13 +36,13 @@ func (vr *VerifierReport) AddMissingFile(filename string) {
 }
 
 // AddValidFile Logs that the given file is valid.
-func (vr *VerifierReport) AddValidFile(filename string) {
+func (vr *VerificationReport) AddValidFile(filename string) {
 
 	vr.CountAll++
 }
 
 // LogSummary Prints a summary report to the log.
-func (vr *VerifierReport) LogSummary(displayCorruptCount bool) {
+func (vr *VerificationReport) LogSummary(displayCorruptCount bool) {
 
 	countCorrupt := vr.CorruptFiles.Len()
 	countMissing := vr.MissingFiles.Len()

@@ -19,7 +19,7 @@ type Importer struct {
 	Db               dal.Database
 	InputDirectory   string
 	OutputChecksums  string
-	Report           *report.ImporterReport
+	Report           *report.ImportReport
 	patterns         importEntryPatterns
 	fingerprintProto *dal.Fingerprint
 }
@@ -37,7 +37,7 @@ func NewImporter(db dal.Database, inputDirectory string, outputChecksums string)
 
 	patterns := importEntryPatterns{nil, nil, nil, nil, nil}
 	fingerprintProto := new(dal.Fingerprint)
-	report := report.NewImporterReport()
+	report := report.NewImportReport()
 
 	return Importer{db, inputDirectory, outputChecksums, report, patterns, fingerprintProto}
 }

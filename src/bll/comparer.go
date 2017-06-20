@@ -14,13 +14,13 @@ type Comparer struct {
 	Db             dal.Database
 	InputDirectory string
 	BasePath       string
-	Report         *report.ComparerReport
+	Report         *report.ComparisonReport
 }
 
 // NewComparer Instantiates a new Comparer object.
 func NewComparer(db dal.Database, inputDirectory string, basePath string) Comparer {
 
-	report := report.NewComparerReport()
+	report := report.NewComparisonReport()
 
 	return Comparer{db, inputDirectory, basePath, report}
 }

@@ -6,27 +6,27 @@ import (
 	"log"
 )
 
-// ComparerReport Stores statistics of a comparison process.
-type ComparerReport struct {
+// ComparisonReport Stores statistics of a comparison process.
+type ComparisonReport struct {
 	MissingFiles *list.List
 	NewFiles     *list.List
 }
 
-// NewComparerReport Instantiates a new ComparerReport object.
-func NewComparerReport() *ComparerReport {
+// NewComparisonReport Instantiates a new ComparisonReport object.
+func NewComparisonReport() *ComparisonReport {
 
-	return &ComparerReport{list.New(), list.New()}
+	return &ComparisonReport{list.New(), list.New()}
 }
 
 // AddMissingFile Adds the given file to the list of missing files.
-func (cr *ComparerReport) AddMissingFile(filename string) {
+func (cr *ComparisonReport) AddMissingFile(filename string) {
 
 	cr.MissingFiles.PushFront(filename)
 	log.Println(fmt.Sprintf("Missing: %s", filename))
 }
 
 // AddNewFile Adds the given file to the list of new files.
-func (cr *ComparerReport) AddNewFile(filename string) {
+func (cr *ComparisonReport) AddNewFile(filename string) {
 
 	cr.NewFiles.PushFront(filename)
 	log.Println(fmt.Sprintf("New: %s", filename))

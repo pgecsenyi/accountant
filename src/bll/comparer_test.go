@@ -20,7 +20,6 @@ func setupComparerTests() {
 
 	testHelper.CreateTestRootDirectory()
 
-	testHelper.CreateTestDirectory("")
 	testHelper.CreateTestDirectory("dir1")
 	testHelper.CreateTestFileWithContent("test2.txt", "Hello World!")
 	testHelper.CreateTestFileWithContent("test3.txt", "Go is an open source programming language")

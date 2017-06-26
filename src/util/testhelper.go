@@ -135,3 +135,9 @@ func (th *TestHelper) HasStringValues(targetSlice []string, values ...string) bo
 
 	return true
 }
+
+// RemoveTestDirectory Deletes all files in the specified test folder.
+func (th *TestHelper) RemoveTestDirectory(testDirectory string) {
+
+	os.RemoveAll(th.GetTestPath(testDirectory))
+}

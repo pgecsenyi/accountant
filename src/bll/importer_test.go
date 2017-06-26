@@ -11,7 +11,7 @@ func TestImporter(t *testing.T) {
 
 	setupImporterTests()
 
-	t.Run("Importer_Convert", testImporterConvert)
+	t.Run("Convert", testImporterConvert)
 
 	tearDownImporterTests()
 }
@@ -57,7 +57,7 @@ func testImporterConvert(t *testing.T) {
 
 	// Assert.
 	if memoryDatabase.GetFingerprints().Len() != 8 {
-		t.Error("Wrong number of database entries.")
+		t.Errorf("Wrong number of database entries: %d (expected: %d).", memoryDatabase.GetFingerprints().Len(), 8)
 	}
 	testFile := testHelper.GetTestPath("subdir/sh.sha512")
 	if importer.Report.GetInvalidEntryCount(testFile) != 3 {

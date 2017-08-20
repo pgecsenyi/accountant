@@ -103,6 +103,7 @@ func testCalculateFingerprints(t *testing.T) {
 
 	// Arrange.
 	expectedFingerprints := testutil.GetExpectedFingerprintsForBasicCalculation()
+	fieldsToCheck := testutil.NewFingerprintFieldsToCheck(false, false, false)
 	hasher := NewHasher("crc32")
 
 	// Act.
@@ -115,7 +116,7 @@ func testCalculateFingerprints(t *testing.T) {
 	if fingerprints.Len() != 2 {
 		t.Errorf("Wrong number of items in result set: %d.", fingerprints.Len())
 	}
-	testutil.AssertContainsFingerprints(t, fingerprints, expectedFingerprints)
+	testutil.AssertContainsFingerprints(t, fingerprints, expectedFingerprints, fieldsToCheck)
 }
 
 func teardownTests() {

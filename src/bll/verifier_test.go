@@ -28,9 +28,9 @@ func setupVerifierTests() {
 func testVerifierVerify(t *testing.T) {
 
 	// Arrange.
-	fp1 := testutil.CreateFingerprint("test.txt", "1d291cf2", "crc32")
-	fp2 := testutil.CreateFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
-	fp3 := testutil.CreateFingerprint("hello.world", "a1b2c3d4", "crc32")
+	fp1 := testutil.CreateSparseFingerprint("test.txt", "1d291cf2", "crc32")
+	fp2 := testutil.CreateSparseFingerprint("dir1/test.txt", "6b24cc6a", "crc32")
+	fp3 := testutil.CreateSparseFingerprint("hello.world", "a1b2c3d4", "crc32")
 	memoryDatabase := dal.NewMemoryDatabase()
 	memoryDatabase.AddFingerprint(fp1)
 	memoryDatabase.AddFingerprint(fp2)
@@ -53,8 +53,8 @@ func testVerifierVerify(t *testing.T) {
 func testVerifierVerifyNamesOnly(t *testing.T) {
 
 	// Arrange.
-	fp1 := testutil.CreateFingerprint("test.txt", "1d291cf2", "crc32")
-	fp2 := testutil.CreateFingerprint("hello.world", "a1b2c3d4", "crc32")
+	fp1 := testutil.CreateSparseFingerprint("test.txt", "1d291cf2", "crc32")
+	fp2 := testutil.CreateSparseFingerprint("hello.world", "a1b2c3d4", "crc32")
 	memoryDatabase := dal.NewMemoryDatabase()
 	memoryDatabase.AddFingerprint(fp1)
 	memoryDatabase.AddFingerprint(fp2)

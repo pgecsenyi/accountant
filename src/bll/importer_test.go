@@ -47,6 +47,7 @@ func testImporterConvert(t *testing.T) {
 
 	// Arrange.
 	expectedFingerprints := getExpectedFingerprintsForImport()
+	fieldsToCheck := testutil.NewFingerprintFieldsToCheck(false, false, false)
 	memoryDatabase := dal.NewMemoryDatabase()
 	testPath := testHelper.GetTestRootDirectory()
 	outputChecksums := testHelper.GetTestPath("out.csv")
@@ -63,7 +64,7 @@ func testImporterConvert(t *testing.T) {
 	if importer.Report.GetInvalidEntryCount(testFile) != 3 {
 		t.Errorf("Wrong number of invalid entries for file \"%s\".", testFile)
 	}
-	testutil.AssertContainsFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints)
+	testutil.AssertContainsFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints, fieldsToCheck)
 }
 
 func tearDownImporterTests() {
@@ -73,14 +74,14 @@ func tearDownImporterTests() {
 
 func getExpectedFingerprintsForImport() *list.List {
 
-	fp1 := testutil.CreateFingerprint("textfile.txt", "15dfaa952a85ad9a458013fa2fc3bdc807d34e7f", "sha1")
-	fp2 := testutil.CreateFingerprint("presentation.odp", "1a0041decc7147a86a01652e92a9027775d472c4", "sha1")
-	fp3 := testutil.CreateFingerprint("compressed.tar.gz", "845178f3c9e7ec71f23e01e2187a1867", "md5")
-	fp4 := testutil.CreateFingerprint("executable", "8d5f2e17f783cc066de6e02adc74566e", "md5")
-	fp5 := testutil.CreateFingerprint("animage.jpg", "afb25773", "crc32")
-	fp6 := testutil.CreateFingerprint("anotherimage.png", "d7b3144f", "crc32")
-	fp7 := testutil.CreateFingerprint("source.c", "357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50", "sha256")
-	fp8 := testutil.CreateFingerprint(
+	fp1 := testutil.CreateSparseFingerprint("textfile.txt", "15dfaa952a85ad9a458013fa2fc3bdc807d34e7f", "sha1")
+	fp2 := testutil.CreateSparseFingerprint("presentation.odp", "1a0041decc7147a86a01652e92a9027775d472c4", "sha1")
+	fp3 := testutil.CreateSparseFingerprint("compressed.tar.gz", "845178f3c9e7ec71f23e01e2187a1867", "md5")
+	fp4 := testutil.CreateSparseFingerprint("executable", "8d5f2e17f783cc066de6e02adc74566e", "md5")
+	fp5 := testutil.CreateSparseFingerprint("animage.jpg", "afb25773", "crc32")
+	fp6 := testutil.CreateSparseFingerprint("anotherimage.png", "d7b3144f", "crc32")
+	fp7 := testutil.CreateSparseFingerprint("source.c", "357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50", "sha256")
+	fp8 := testutil.CreateSparseFingerprint(
 		"important.odt",
 		"312c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41",
 		"sha512")

@@ -7,14 +7,15 @@ import (
 	"testing"
 )
 
-var exportTestFingerprint1 = testutil.CreateFingerprint("textfile.txt", "15dfaa952a85ad9a458013fa2fc3bdc807d34e7f", "sha1")
-var exportTestFingerprint2 = testutil.CreateFingerprint("compressed.tar.gz", "845178f3c9e7ec71f23e01e2187a1867", "md5")
-var exportTestFingerprint3 = testutil.CreateFingerprint("animage.jpg", "afb25773", "crc32")
-var exportTestFingerprint4 = testutil.CreateFingerprint(
-	"source.c",
-	"357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50",
-	"sha256")
-var exportTestFingerprint5 = testutil.CreateFingerprint(
+var exportTestFingerprint1 = testutil.CreateSparseFingerprint(
+	"textfile.txt", "15dfaa952a85ad9a458013fa2fc3bdc807d34e7f", "sha1")
+var exportTestFingerprint2 = testutil.CreateSparseFingerprint(
+	"compressed.tar.gz", "845178f3c9e7ec71f23e01e2187a1867", "md5")
+var exportTestFingerprint3 = testutil.CreateSparseFingerprint(
+	"animage.jpg", "afb25773", "crc32")
+var exportTestFingerprint4 = testutil.CreateSparseFingerprint(
+	"source.c",	"357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50",	"sha256")
+var exportTestFingerprint5 = testutil.CreateSparseFingerprint(
 	"source2.c",
 	"312c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41",
 	"sha512")
@@ -73,6 +74,7 @@ func testExporterWithFilter(t *testing.T, filter string, expectedFingerprints *l
 	memoryDatabase1 := dal.NewMemoryDatabase()
 	memoryDatabase2 := dal.NewMemoryDatabase()
 	memoryDatabase1.Fingerprints = getFingerprintsToExport()
+	fieldsToCheck := testutil.NewFingerprintFieldsToCheck(false, false, false)
 	testPath := testHelper.GetTestPath("tmp")
 	outputChecksums := testHelper.GetTestPath("out.csv")
 	exporter := NewExporter(memoryDatabase1, testPath, filter, "")
@@ -96,7 +98,7 @@ func testExporterWithFilter(t *testing.T, filter string, expectedFingerprints *l
 	assertInvalidEntryCountInExportedFile(t, importer, "Checksum.sha1")
 	assertInvalidEntryCountInExportedFile(t, importer, "Checksum.sha256")
 	assertInvalidEntryCountInExportedFile(t, importer, "Checksum.sha512")
-	testutil.AssertContainsFingerprints(t, memoryDatabase2.GetFingerprints(), expectedFingerprints)
+	testutil.AssertContainsFingerprints(t, memoryDatabase2.GetFingerprints(), expectedFingerprints, fieldsToCheck)
 }
 
 func getFingerprintsToExport() *list.List {

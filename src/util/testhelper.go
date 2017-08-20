@@ -66,6 +66,12 @@ func (th *TestHelper) CreateTestRootDirectory() {
 	}
 }
 
+// GetTestDirectory Gets the path of a test folder.
+func (th *TestHelper) GetTestDirectory(directory string) string {
+
+	return path.Join(th.testFolder, directory)
+}
+
 // GetTestPath Gets the path for the given file under the test folder.
 func (th *TestHelper) GetTestPath(filePath string) string {
 

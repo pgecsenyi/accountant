@@ -36,7 +36,7 @@ func testVerifierVerify(t *testing.T) {
 	memoryDatabase.AddFingerprint(fp2)
 	memoryDatabase.AddFingerprint(fp3)
 	testPath := testHelper.GetTestRootDirectory()
-	verifier := NewVerifier(memoryDatabase, "calculation", testPath)
+	verifier := NewVerifier(memoryDatabase, testPath)
 
 	// Act.
 	verifier.Verify(false)
@@ -59,7 +59,7 @@ func testVerifierVerifyNamesOnly(t *testing.T) {
 	memoryDatabase.AddFingerprint(fp1)
 	memoryDatabase.AddFingerprint(fp2)
 	testPath := testHelper.GetTestRootDirectory()
-	verifier := NewVerifier(memoryDatabase, testPath, testPath)
+	verifier := NewVerifier(memoryDatabase, testPath)
 
 	// Act.
 	verifier.Verify(true)

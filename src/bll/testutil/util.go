@@ -8,11 +8,13 @@ import (
 	"util"
 )
 
+// CreateSparseFingerprint Creates a fingerprint with the given name, checksum and algorithm.
 func CreateSparseFingerprint(filename string, checksum string, algorithm string) *dal.Fingerprint {
 
 	return CreateFingerprint(filename, checksum, algorithm, "", "", "")
 }
 
+// CreateFingerprint Creates a fingerprint with the given fields.
 func CreateFingerprint(
 	filename string, checksum string,
 	algorithm string, createdAt string,
@@ -24,6 +26,7 @@ func CreateFingerprint(
 	return &dal.Fingerprint{filename, checksumBytes, algorithm, createdAt, creator, note}
 }
 
+// CreateList Creates a list containing the given items.
 func CreateList(items ...interface{}) *list.List {
 
 	result := list.New()
@@ -34,6 +37,7 @@ func CreateList(items ...interface{}) *list.List {
 	return result
 }
 
+// GetExpectedFingerprintsForBasicCalculation Creates fingerprints for testing calculation logic.
 func GetExpectedFingerprintsForBasicCalculation() *list.List {
 
 	fp1 := CreateSparseFingerprint("test.txt", "1c291ca3", "crc32")
@@ -43,6 +47,8 @@ func GetExpectedFingerprintsForBasicCalculation() *list.List {
 	return expectedFingerprints
 }
 
+// AssertContainsFingerprints Checks whether the given fingerprints are in the given list. Filtering can be customized
+// using the "fieldsToCheck" parameter.
 func AssertContainsFingerprints(
 	t *testing.T, fingerprints *list.List,
 	expectedFingerprints *list.List, fieldsToCheck FingerprintFieldsToCheck) {

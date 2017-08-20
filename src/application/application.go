@@ -65,7 +65,7 @@ func (app *Application) Execute() {
 		importer := bll.NewImporter(db, conf.inputDirectory, conf.outputChecksum)
 		importer.Convert()
 	} else if app.config.task == taskVerify {
-		verifier := bll.NewVerifier(db, conf.inputChecksum, conf.basePath)
+		verifier := bll.NewVerifier(db, conf.basePath)
 		verifier.Verify(conf.missingOnly)
 	}
 }

@@ -38,5 +38,5 @@ The application is able to perform several different tasks (determined by the `-
 
   * Windows 10
   * Go 1.7.4 Windows amd64
-  * Visual Studio Code 1.13.1
-    * Extension: Go 0.6.62
+  * Visual Studio Code 1.14.2
+    * Extension: Go 0.6.63

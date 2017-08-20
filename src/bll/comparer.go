@@ -31,10 +31,10 @@ func (comparer *Comparer) Compare(algorithm string) {
 	oldFingerprints := comparer.loadOldFingerprints()
 	newFingerprints := comparer.calculateNewFingerprints(algorithm)
 
+	comparer.compareWithPreviousSnapshot(oldFingerprints, newFingerprints)
+
 	comparer.Db.SetFingerprints(newFingerprints)
 	comparer.Db.SaveFingerprints()
-
-	comparer.compareAndSaveResults(oldFingerprints, newFingerprints)
 	comparer.Db.SaveNamePairs()
 }
 
@@ -61,7 +61,7 @@ func (comparer *Comparer) getEffectiveBasePath() string {
 	return util.TrimPath(comparer.InputDirectory, comparer.BasePath)
 }
 
-func (comparer *Comparer) compareAndSaveResults(oldFingerprints *list.List, newFingerprints *list.List) {
+func (comparer *Comparer) compareWithPreviousSnapshot(oldFingerprints *list.List, newFingerprints *list.List) {
 
 	cache := buildFingerprintCache(oldFingerprints)
 	foundFingerprints := make(map[string]bool)
@@ -85,6 +85,8 @@ func (comparer *Comparer) processMatch(
 	} else {
 		comparer.Db.AddNamePair(&dal.NamePair{fingerprint.Filename, matchingFingerprint.Filename})
 		fingerprint.CreatedAt = matchingFingerprint.CreatedAt
+		fingerprint.Creator = matchingFingerprint.Creator
+		fingerprint.Note = matchingFingerprint.Note
 		foundFingerprints[checksum] = true
 	}
 }

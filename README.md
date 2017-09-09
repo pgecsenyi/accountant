@@ -1,6 +1,6 @@
 # Accountant
 
-Matches files by checksum and stores the old name - new name pairs as well as the corresponding checksums in a CSV file.
+A cross-platform command line utility for calculating and verifying checksums, storing them in a centralized and unified manner, and for finding renamed files by their checksums.
 
 ## Installation and usage
 
@@ -33,6 +33,7 @@ The application is able to perform several different tasks (determined by the `-
     * `-inchk`: the path of the file containing checksums.
     * `-bp`: the base path for each entry listed in the input. Optional.
     * `-missingonly`: if set to true `true`, only paths will be examined, checking whether they exist or not, otherwise checksums will be also verified. Optional, the default value is `false`.
+    * `-filter`: just the same filter expression with the same purpose as for export.
 
 ## Development Environment
 
@@ -40,3 +41,4 @@ The application is able to perform several different tasks (determined by the `-
   * Go 1.7.4 Windows amd64
   * Visual Studio Code 1.15.1
     * Extension: Go 0.6.65
+  * goconvey

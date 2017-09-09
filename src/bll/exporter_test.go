@@ -1,6 +1,7 @@
 package bll
 
 import (
+	"bll/common"
 	"bll/testutil"
 	"container/list"
 	"dal"
@@ -14,7 +15,7 @@ var exportTestFingerprint2 = testutil.CreateSparseFingerprint(
 var exportTestFingerprint3 = testutil.CreateSparseFingerprint(
 	"animage.jpg", "afb25773", "crc32")
 var exportTestFingerprint4 = testutil.CreateSparseFingerprint(
-	"source.c",	"357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50",	"sha256")
+	"source.c", "357ad3058f7b5b71e0488df08ed1f6dfcdde722f298bdd9a903b1c8121d9db50", "sha256")
 var exportTestFingerprint5 = testutil.CreateSparseFingerprint(
 	"source2.c",
 	"312c3581a742881b03a7b8f4311a67744e36152a6494806046154e005cd4230a9c7c439e273c4ab811e897f97bf92fa4136bab895b101c8792a7f0e05ecf5d41",
@@ -41,26 +42,30 @@ func setupExporterTests() {
 
 func testExporterConvert(t *testing.T) {
 
+	fpFilter := common.NewFingerprintFilter("")
 	expectedFingerprints := getFingerprintsToExport()
-	testExporterWithFilter(t, "", expectedFingerprints)
+	testExporterWithFilter(t, fpFilter, expectedFingerprints)
 }
 
 func testExporterConvertEmptyFilter(t *testing.T) {
 
+	fpFilter := common.NewFingerprintFilter(":")
 	expectedFingerprints := getFingerprintsToExport()
-	testExporterWithFilter(t, ":", expectedFingerprints)
+	testExporterWithFilter(t, fpFilter, expectedFingerprints)
 }
 
 func testExporterConvertFilterName(t *testing.T) {
 
+	fpFilter := common.NewFingerprintFilter("source")
 	expectedFingerprints := getExpectedFingerprintsForExportWithNameFilter()
-	testExporterWithFilter(t, "source", expectedFingerprints)
+	testExporterWithFilter(t, fpFilter, expectedFingerprints)
 }
 
 func testExporterConvertFilterNameAlg(t *testing.T) {
 
+	fpFilter := common.NewFingerprintFilter("source:sha256")
 	expectedFingerprints := getExpectedFingerprintsForExportWithNameAlgFilter()
-	testExporterWithFilter(t, "source:sha256", expectedFingerprints)
+	testExporterWithFilter(t, fpFilter, expectedFingerprints)
 }
 
 func tearDownExporterTests() {
@@ -68,7 +73,7 @@ func tearDownExporterTests() {
 	testHelper.CleanUp()
 }
 
-func testExporterWithFilter(t *testing.T, filter string, expectedFingerprints *list.List) {
+func testExporterWithFilter(t *testing.T, fpFilter common.FingerprintFilter, expectedFingerprints *list.List) {
 
 	// Arrange.
 	memoryDatabase1 := dal.NewMemoryDatabase()
@@ -77,11 +82,11 @@ func testExporterWithFilter(t *testing.T, filter string, expectedFingerprints *l
 	fieldsToCheck := testutil.NewFingerprintFieldsToCheck(false, false, false)
 	testPath := testHelper.GetTestPath("tmp")
 	outputChecksums := testHelper.GetTestPath("out.csv")
-	exporter := NewExporter(memoryDatabase1, testPath, filter, "")
+	exporter := NewExporter(memoryDatabase1, testPath, "")
 	importer := NewImporter(memoryDatabase2, testPath, outputChecksums)
 
 	// Act.
-	exporter.Convert()
+	exporter.Convert(fpFilter)
 	importer.Convert()
 	testHelper.RemoveTestDirectory("tmp")
 	testHelper.CreateTestDirectory("tmp")

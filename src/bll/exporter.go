@@ -1,12 +1,12 @@
 package bll
 
 import (
+	"bll/common"
 	"dal"
 	"encoding/hex"
 	"fmt"
 	"os"
 	"path"
-	"strings"
 	"util"
 )
 
@@ -14,7 +14,6 @@ import (
 type Exporter struct {
 	Db              dal.Database
 	OutputDirectory string
-	Filter          string
 	BasePath        string
 	fileWriters     fileHandlers
 }
@@ -28,20 +27,20 @@ type fileHandlers struct {
 }
 
 // NewExporter Instantiates a new Exporter object.
-func NewExporter(db dal.Database, outputDirectory string, filter string, basePath string) Exporter {
+func NewExporter(db dal.Database, outputDirectory string, basePath string) Exporter {
 
 	basePath = util.NormalizePath(basePath)
 	fileHandlers := fileHandlers{nil, nil, nil, nil, nil}
 
-	return Exporter{db, outputDirectory, filter, basePath, fileHandlers}
+	return Exporter{db, outputDirectory, basePath, fileHandlers}
 }
 
 // Convert Converts checksum data to formats that third party utilities understand.
-func (exporter *Exporter) Convert() {
+func (exporter *Exporter) Convert(fpFilter common.FingerprintFilter) {
 
 	exporter.Db.LoadFingerprints()
 	defer exporter.closeFiles()
-	exporter.exportChecksums()
+	exporter.exportChecksums(fpFilter)
 }
 
 func (exporter *Exporter) closeFiles() {
@@ -64,39 +63,18 @@ func (exporter *Exporter) closeFiles() {
 	}
 }
 
-func (exporter *Exporter) exportChecksums() {
+func (exporter *Exporter) exportChecksums(fpFilter common.FingerprintFilter) {
 
 	fingerprints := exporter.Db.GetFingerprints()
-	filenameFilter, algFilter := exporter.getFilterParts()
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
-		if filterFingerprint(fingerprint, filenameFilter, algFilter) {
+		if fpFilter.FilterFingerprint(fingerprint) {
 			checksum := hex.EncodeToString(fingerprint.Checksum)
 			fullPath := path.Join(exporter.BasePath, fingerprint.Filename)
 			exporter.exportChecksum(fullPath, checksum, fingerprint.Algorithm)
 		}
 	}
-}
-
-func (exporter *Exporter) getFilterParts() (string, string) {
-
-	if exporter.Filter == "" {
-		return "", ""
-	}
-
-	separatorIndex := strings.Index(exporter.Filter, ":")
-	if separatorIndex == -1 {
-		return exporter.Filter, ""
-	}
-
-	return exporter.Filter[:separatorIndex], exporter.Filter[separatorIndex+1:]
-}
-
-func filterFingerprint(fingerprint *dal.Fingerprint, filenameFilter string, algFilter string) bool {
-
-	return (filenameFilter == "" || strings.Contains(fingerprint.Filename, filenameFilter)) &&
-		(algFilter == "" || fingerprint.Algorithm == algFilter)
 }
 
 func (exporter *Exporter) exportChecksum(filename string, hash string, algorithm string) {

@@ -104,13 +104,13 @@ func (th *TestHelper) HasFileInfoValues(targetSlice []os.FileInfo, values ...str
 }
 
 // HasStringItems Checks whether the given list has all the string values provided.
-func (th *TestHelper) HasStringItems(targetList *list.List, values ...string) bool {
+func (th *TestHelper) HasStringItems(targetList *list.List, expectedValues ...string) bool {
 
-	for element := targetList.Front(); element != nil; element = element.Next() {
-		filename := element.Value.(string)
+	for _, expectedValue := range expectedValues {
 		match := false
-		for _, value := range values {
-			if filename == value {
+		for element := targetList.Front(); element != nil; element = element.Next() {
+			strElement := element.Value.(string)
+			if strElement == expectedValue {
 				match = true
 				break
 			}
@@ -124,12 +124,12 @@ func (th *TestHelper) HasStringItems(targetList *list.List, values ...string) bo
 }
 
 // HasStringValues Checks whether the given slice has all the string values provided.
-func (th *TestHelper) HasStringValues(targetSlice []string, values ...string) bool {
+func (th *TestHelper) HasStringValues(targetSlice []string, expectedValues ...string) bool {
 
-	for _, item := range targetSlice {
+	for _, expectedValue := range expectedValues {
 		match := false
-		for _, value := range values {
-			if item == value {
+		for _, item := range targetSlice {
+			if item == expectedValue {
 				match = true
 				break
 			}

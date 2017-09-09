@@ -2,6 +2,7 @@ package application
 
 import (
 	"bll"
+	"bll/common"
 	"dal"
 	"flag"
 	"log"
@@ -59,14 +60,16 @@ func (app *Application) Execute() {
 		comparer := bll.NewComparer(db, conf.inputDirectory, app.config.basePath)
 		comparer.Compare(app.config.algorithm)
 	} else if app.config.task == taskExport {
-		exporter := bll.NewExporter(db, conf.outputDirectory, conf.filter, conf.basePath)
-		exporter.Convert()
+		exporter := bll.NewExporter(db, conf.outputDirectory, conf.basePath)
+		fpFilter := common.NewFingerprintFilter(conf.filter)
+		exporter.Convert(fpFilter)
 	} else if app.config.task == taskImport {
 		importer := bll.NewImporter(db, conf.inputDirectory, conf.outputChecksum)
 		importer.Convert()
 	} else if app.config.task == taskVerify {
 		verifier := bll.NewVerifier(db, conf.basePath)
-		verifier.Verify(conf.missingOnly)
+		fpFilter := common.NewFingerprintFilter(conf.filter)
+		verifier.Verify(conf.missingOnly, fpFilter)
 	}
 }
 
@@ -77,7 +80,11 @@ func (app *Application) parseCommandLineArguments(defaultConfig configuration) {
 		"bp",
 		defaultConfig.basePath,
 		"The first part of the path that will not be stored in the output.")
-	filter := flag.String("filter", defaultConfig.filter, "A filter for exported filenames.")
+	filter := flag.String(
+		"filter",
+		defaultConfig.filter,
+		"A string in \"filename:algorithm\" format that exported or verified filenames/algorithms must match. Both"+
+			"parts are optional.")
 	inputChecksum := flag.String(
 		"inchk",
 		defaultConfig.inputChecksum,

@@ -10,9 +10,9 @@ import (
 
 // Verifier Stores settings related to verification.
 type Verifier struct {
-	Db             dal.Database
-	BasePath       string
-	Report         *report.VerificationReport
+	Db       dal.Database
+	BasePath string
+	Report   *report.VerificationReport
 }
 
 // NewVerifier Instantiates a new Verifier object.
@@ -25,20 +25,22 @@ func NewVerifier(db dal.Database, basePath string) Verifier {
 }
 
 // Verify Verifies checksums in the given file.
-func (verifier *Verifier) Verify(verifyNamesOnly bool) {
+func (verifier *Verifier) Verify(verifyNamesOnly bool, fpFilter common.FingerprintFilter) {
 
 	verifier.Db.LoadFingerprints()
-	verifier.verifyEntries(verifyNamesOnly)
+	verifier.verifyEntries(verifyNamesOnly, fpFilter)
 	verifier.Report.LogSummary(!verifyNamesOnly)
 }
 
-func (verifier *Verifier) verifyEntries(verifyNamesOnly bool) {
+func (verifier *Verifier) verifyEntries(verifyNamesOnly bool, fpFilter common.FingerprintFilter) {
 
 	fingerprints := verifier.Db.GetFingerprints()
 
 	for element := fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*dal.Fingerprint)
-		verifier.verifyEntry(fingerprint, verifyNamesOnly)
+		if fpFilter.FilterFingerprint(fingerprint) {
+			verifier.verifyEntry(fingerprint, verifyNamesOnly)
+		}
 	}
 }
 

@@ -48,7 +48,7 @@ func testComparerCompareAllFields(t *testing.T) {
 	comparer.Compare("crc32")
 
 	// Assert.
-	testutil.AssertContainsFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints, fieldsToCheck)
+	testutil.AssertContainsFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints, fieldsToCheck)
 }
 
 func testComparerCompareNewAndMissingFiles(t *testing.T) {
@@ -64,7 +64,7 @@ func testComparerCompareNewAndMissingFiles(t *testing.T) {
 	comparer.Compare("crc32")
 
 	// Assert.
-	testutil.AssertContainsFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints, fieldsToCheck)
+	testutil.AssertContainsFingerprints(t, memoryDatabase.GetFingerprints(), expectedFingerprints, fieldsToCheck)
 	assertComparerMissingFiles(t, &comparer)
 	assertComparerNewFiles(t, &comparer)
 }

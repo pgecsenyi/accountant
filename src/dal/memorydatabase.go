@@ -7,8 +7,8 @@ import (
 
 // MemoryDatabase Logic for calculating checksums.
 type MemoryDatabase struct {
-	Fingerprints *list.List
-	NamePairs    *list.List
+	fingerprints *list.List
+	namePairs    *list.List
 }
 
 // NewMemoryDatabase Instantiates a new MemoryDatabase object.
@@ -21,7 +21,7 @@ func NewMemoryDatabase() *MemoryDatabase {
 func (db *MemoryDatabase) AddFingerprint(fingerprint *Fingerprint) {
 
 	if fingerprint != nil {
-		db.Fingerprints.PushFront(fingerprint)
+		db.fingerprints.PushFront(fingerprint)
 	}
 }
 
@@ -29,14 +29,20 @@ func (db *MemoryDatabase) AddFingerprint(fingerprint *Fingerprint) {
 func (db *MemoryDatabase) AddNamePair(namePair *NamePair) {
 
 	if namePair != nil {
-		db.NamePairs.PushFront(namePair)
+		db.namePairs.PushFront(namePair)
 	}
 }
 
 // GetFingerprints Returns stored fingerprints.
 func (db *MemoryDatabase) GetFingerprints() *list.List {
 
-	return db.Fingerprints
+	return db.fingerprints
+}
+
+// GetNamePairs Returns stored name pairs.
+func (db *MemoryDatabase) GetNamePairs() *list.List {
+
+	return db.namePairs
 }
 
 // LoadFingerprints Does nothing, there's nothing to load.
@@ -46,7 +52,7 @@ func (db *MemoryDatabase) LoadFingerprints() {
 // LoadNamesFromFingeprints Passes filenames to the given StringWriter.
 func (db *MemoryDatabase) LoadNamesFromFingeprints(writer util.StringWriter) {
 
-	for element := db.Fingerprints.Front(); element != nil; element = element.Next() {
+	for element := db.fingerprints.Front(); element != nil; element = element.Next() {
 		fingerprint := element.Value.(*Fingerprint)
 		writer.Write(fingerprint.Filename)
 	}
@@ -63,5 +69,5 @@ func (db *MemoryDatabase) SaveNamePairs() {
 // SetFingerprints Sets stored fingerprints.
 func (db *MemoryDatabase) SetFingerprints(fingerprints *list.List) {
 
-	db.Fingerprints = fingerprints
+	db.fingerprints = fingerprints
 }

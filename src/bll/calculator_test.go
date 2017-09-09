@@ -39,10 +39,11 @@ func testCalculatorAll(t *testing.T) {
 	calculator.Calculate(false)
 
 	// Assert.
-	if memoryDatabase.Fingerprints.Len() != 2 {
-		t.Errorf("Wrong number of items in result set: %d.", memoryDatabase.Fingerprints.Len())
+	actualFingerprints := memoryDatabase.GetFingerprints()
+	if actualFingerprints.Len() != 2 {
+		t.Errorf("Wrong number of items in result set: %d.", actualFingerprints.Len())
 	}
-	testutil.AssertContainsFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints, fieldsToCheck)
+	testutil.AssertContainsFingerprints(t, actualFingerprints, expectedFingerprints, fieldsToCheck)
 }
 
 func testCalculatorMissingOnly(t *testing.T) {
@@ -60,10 +61,11 @@ func testCalculatorMissingOnly(t *testing.T) {
 	calculator.Calculate(true)
 
 	// Assert.
-	if memoryDatabase.Fingerprints.Len() != 1 {
-		t.Errorf("Wrong number of items in result set: %d.", memoryDatabase.Fingerprints.Len())
+	actualFingerprints := memoryDatabase.GetFingerprints()
+	if actualFingerprints.Len() != 1 {
+		t.Errorf("Wrong number of items in result set: %d.", actualFingerprints.Len())
 	}
-	testutil.AssertContainsFingerprints(t, memoryDatabase.Fingerprints, expectedFingerprints, fieldsToCheck)
+	testutil.AssertContainsFingerprints(t, actualFingerprints, expectedFingerprints, fieldsToCheck)
 }
 
 func tearDownCalculatorTests() {

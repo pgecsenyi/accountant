@@ -39,7 +39,7 @@ type configuration struct {
 // Initialize Initializes the application.
 func (app *Application) Initialize() {
 
-	defaultConfig := configuration{taskCalculate, dal.SHA1, "", "", "", "", "", "", "", false, ""}
+	defaultConfig := configuration{taskCalculate, dal.SHA256, "", "", "", "", "", "", "", false, ""}
 	app.parseCommandLineArguments(defaultConfig)
 	app.verifyConfiguration()
 }

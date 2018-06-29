@@ -25,12 +25,28 @@ func (db *MemoryDatabase) AddFingerprint(fingerprint *Fingerprint) {
 	}
 }
 
+// AddFingerprints Adds a list of fingerprints to the database.
+func (db *MemoryDatabase) AddFingerprints(fingerprints *list.List) {
+
+	for element := fingerprints.Front(); element != nil; element = element.Next() {
+		fingerprint := element.Value.(*Fingerprint)
+		db.AddFingerprint(fingerprint)
+	}
+}
+
 // AddNamePair Adds a name pair to the database.
 func (db *MemoryDatabase) AddNamePair(namePair *NamePair) {
 
 	if namePair != nil {
 		db.namePairs.PushFront(namePair)
 	}
+}
+
+// Clear Removes all entries from the database.
+func (db *MemoryDatabase) Clear() {
+
+	db.fingerprints.Init()
+	db.namePairs.Init()
 }
 
 // GetFingerprints Returns stored fingerprints.
@@ -64,10 +80,4 @@ func (db *MemoryDatabase) SaveFingerprints() {
 
 // SaveNamePairs Does nothing, there is nowhere to save.
 func (db *MemoryDatabase) SaveNamePairs() {
-}
-
-// SetFingerprints Sets stored fingerprints.
-func (db *MemoryDatabase) SetFingerprints(fingerprints *list.List) {
-
-	db.fingerprints = fingerprints
 }

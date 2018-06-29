@@ -32,8 +32,8 @@ func (comparer *Comparer) Compare(algorithm string) {
 	newFingerprints := comparer.calculateNewFingerprints(algorithm)
 
 	comparer.compareWithPreviousSnapshot(oldFingerprints, newFingerprints)
-
-	comparer.Db.SetFingerprints(newFingerprints)
+	comparer.Db.Clear()
+	comparer.Db.AddFingerprints(newFingerprints)
 	comparer.Db.SaveFingerprints()
 	comparer.Db.SaveNamePairs()
 }

@@ -39,6 +39,20 @@ func TestAddFingerprint(t *testing.T) {
 	assertStoredFingerprintsAreValid(t, actualFingerprints)
 }
 
+func TestAddFingerprints(t *testing.T) {
+
+	checksum := []byte{12, 23, 34, 45}
+	fingerprint := &Fingerprint{"simple.txt", checksum, "sha1", "", "", ""}
+	fingerprints := list.New()
+	fingerprints.PushFront(fingerprint)
+	memoryDatabase := NewMemoryDatabase()
+
+	memoryDatabase.AddFingerprints(fingerprints)
+	actualFingerprints := memoryDatabase.GetFingerprints()
+
+	assertStoredFingerprintsAreValid(t, actualFingerprints)
+}
+
 func TestAddNamePair(t *testing.T) {
 
 	namePair := &NamePair{"new", "old"}
@@ -67,20 +81,6 @@ func TestLoadNamesFromFingeprints(t *testing.T) {
 	memoryDatabase.AddFingerprint(fingerprint)
 
 	memoryDatabase.LoadNamesFromFingeprints(otfReadTester)
-}
-
-func TestSetFingerprint(t *testing.T) {
-
-	checksum := []byte{12, 23, 34, 45}
-	fingerprint := &Fingerprint{"simple.txt", checksum, "sha1", "", "", ""}
-	fingerprints := list.New()
-	fingerprints.PushFront(fingerprint)
-	memoryDatabase := NewMemoryDatabase()
-
-	memoryDatabase.SetFingerprints(fingerprints)
-	actualFingerprints := memoryDatabase.GetFingerprints()
-
-	assertStoredFingerprintsAreValid(t, actualFingerprints)
 }
 
 func assertStoredFingerprintsAreValid(t *testing.T, actualFingerprints *list.List) {

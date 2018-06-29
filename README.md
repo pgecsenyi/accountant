@@ -37,8 +37,8 @@ The application is able to perform several different tasks (determined by the `-
 
 ## Development Environment
 
-  * Windows 10
-  * Go 1.7.4 Windows amd64
+  * Ubuntu 17.10
+  * Go 1.9.2 Linux amd64
   * Visual Studio Code 1.19.3
-    * Extension: Go 0.6.73
+    * Extension: Go 0.6.78
   * goconvey

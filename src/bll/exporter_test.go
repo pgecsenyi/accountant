@@ -78,7 +78,7 @@ func testExporterWithFilter(t *testing.T, fpFilter common.FingerprintFilter, exp
 	// Arrange.
 	memoryDatabase1 := dal.NewMemoryDatabase()
 	memoryDatabase2 := dal.NewMemoryDatabase()
-	memoryDatabase1.SetFingerprints(getFingerprintsToExport())
+	memoryDatabase1.AddFingerprints(getFingerprintsToExport())
 	fieldsToCheck := testutil.NewFingerprintFieldsToCheck(false, false, false)
 	testPath := testHelper.GetTestPath("tmp")
 	outputChecksums := testHelper.GetTestPath("out.csv")

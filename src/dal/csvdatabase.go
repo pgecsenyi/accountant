@@ -35,12 +35,28 @@ func (db *CsvDatabase) AddFingerprint(fingerprint *Fingerprint) {
 	}
 }
 
+// AddFingerprints Adds a list of fingerprints to the database.
+func (db *CsvDatabase) AddFingerprints(fingerprints *list.List) {
+
+	for element := fingerprints.Front(); element != nil; element = element.Next() {
+		fingerprint := element.Value.(*Fingerprint)
+		db.AddFingerprint(fingerprint)
+	}
+}
+
 // AddNamePair Adds a name pair to the database.
 func (db *CsvDatabase) AddNamePair(namePair *NamePair) {
 
 	if namePair != nil {
 		db.namePairs.PushFront(namePair)
 	}
+}
+
+// Clear Removes all entries from the database.
+func (db *CsvDatabase) Clear() {
+
+	db.fingerprints.Init()
+	db.namePairs.Init()
 }
 
 // GetFingerprints Returns stored fingerprints.
@@ -104,12 +120,6 @@ func (db *CsvDatabase) SaveNamePairs() {
 		namePair := element.Value.(*NamePair)
 		writeNamePair(namePair, outputFile)
 	}
-}
-
-// SetFingerprints Sets stored fingerprints.
-func (db *CsvDatabase) SetFingerprints(fingerprints *list.List) {
-
-	db.fingerprints = fingerprints
 }
 
 func (db *CsvDatabase) addFingerprint(record []string) {

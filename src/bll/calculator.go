@@ -31,8 +31,8 @@ func (calculator *Calculator) Calculate(missingOnly bool) {
 
 	files := util.ListFilesRecursively(calculator.InputDirectory)
 	fingerprints := calculator.calculateFingerprints(files, missingOnly)
-
-	calculator.Db.SetFingerprints(fingerprints)
+	calculator.Db.Clear()
+	calculator.Db.AddFingerprints(fingerprints)
 	calculator.Db.SaveFingerprints()
 }
 

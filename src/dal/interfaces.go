@@ -12,6 +12,7 @@ type Database interface {
 	AddNamePair(namePair *NamePair)
 	Clear()
 	GetFingerprints() *list.List
+	GetNamePairs() *list.List
 	LoadFingerprints()
 	LoadNamesFromFingeprints(writer util.StringWriter)
 	SaveFingerprints()

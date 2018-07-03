@@ -120,7 +120,7 @@ func (importer *Importer) parseLine(
 		return true
 	}
 
-	// Try to filename and checksum.
+	// Try to parse filename and checksum.
 	matches := pattern.FindStringSubmatch(line)
 	if matches == nil || len(matches) < 3 {
 		return false

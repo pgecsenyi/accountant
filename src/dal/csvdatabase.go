@@ -65,6 +65,12 @@ func (db *CsvDatabase) GetFingerprints() *list.List {
 	return db.fingerprints
 }
 
+// GetNamePairs Returns stored name pairs.
+func (db *CsvDatabase) GetNamePairs() *list.List {
+
+	return db.namePairs
+}
+
 // LoadFingerprints Loads fingerprints from the given CSV file.
 func (db *CsvDatabase) LoadFingerprints() {
 

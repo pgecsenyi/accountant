@@ -1,6 +1,6 @@
-# Accountant
+# FMR
 
-A cross-platform command line utility for calculating and verifying checksums, storing them in a centralized and unified manner, and for finding renamed files by their checksums.
+FMR (File Meta Registry) is a cross-platform command line utility for calculating and verifying checksums, tracking moved files and storing metadata in a unified manner.
 
 ## Installation and usage
 

@@ -2,10 +2,10 @@ package testutil
 
 import (
 	"container/list"
-	"dal"
 	"encoding/hex"
+	"fmr/dal"
+	"fmr/util"
 	"testing"
-	"util"
 )
 
 // CreateSparseFingerprint Creates a fingerprint with the given name, checksum and algorithm.

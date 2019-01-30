@@ -1,6 +1,6 @@
 package main
 
-import "application"
+import "fmr/application"
 
 func main() {
 

@@ -37,8 +37,11 @@ The application is able to perform several different tasks (determined by the `-
 
 ## Development Environment
 
-  * Ubuntu 17.10
-  * Go 1.9.2 Linux amd64
-  * Visual Studio Code 1.19.3
-    * Extension: Go 0.6.78
-  * goconvey
+  * Windows 10
+  * Go 1.11.4 windows/amd64
+    * delve 1.2.0
+    * goconvey
+    * gofmt
+    * golint
+  * Visual Studio Code 1.30.2
+    * Extension: Go 0.9.2

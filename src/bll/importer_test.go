@@ -1,9 +1,9 @@
 package bll
 
 import (
-	"bll/testutil"
 	"container/list"
-	"dal"
+	"fmr/bll/testutil"
+	"fmr/dal"
 	"testing"
 )
 

@@ -1,10 +1,10 @@
 package bll
 
 import (
-	"bll/testutil"
-	"dal"
+	"fmr/bll/testutil"
+	"fmr/dal"
+	"fmr/util"
 	"testing"
-	"util"
 )
 
 func TestCalculator(t *testing.T) {

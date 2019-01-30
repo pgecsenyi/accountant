@@ -2,7 +2,7 @@ package dal
 
 import (
 	"container/list"
-	"util"
+	"fmr/util"
 )
 
 // Database Interface for database implementations.

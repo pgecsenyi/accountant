@@ -1,13 +1,13 @@
 package application
 
 import (
-	"bll"
-	"bll/common"
-	"dal"
 	"flag"
+	"fmr/bll"
+	"fmr/bll/common"
+	"fmr/dal"
+	"fmr/util"
 	"log"
 	"os"
-	"util"
 )
 
 const taskCalculate = "calculate"

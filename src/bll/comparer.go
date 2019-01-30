@@ -1,12 +1,12 @@
 package bll
 
 import (
-	"bll/common"
-	"bll/report"
 	"container/list"
-	"dal"
 	"encoding/hex"
-	"util"
+	"fmr/bll/common"
+	"fmr/bll/report"
+	"fmr/dal"
+	"fmr/util"
 )
 
 // Comparer Stores settings related to comparison.

@@ -1,11 +1,11 @@
 package bll
 
 import (
-	"bll/common"
 	"container/list"
-	"dal"
+	"fmr/bll/common"
+	"fmr/dal"
+	"fmr/util"
 	"path"
-	"util"
 )
 
 // Calculator Stores settings related to checksum calculation.

@@ -5,11 +5,11 @@ import (
 	"container/list"
 	"encoding/csv"
 	"encoding/hex"
+	"fmr/util"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
-	"util"
 )
 
 // CsvDatabase Logic for calculating checksums.

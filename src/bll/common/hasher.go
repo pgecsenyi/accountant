@@ -6,14 +6,14 @@ import (
 	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
-	"dal"
+	"fmr/dal"
+	"fmr/util"
 	"hash"
 	"hash/crc32"
 	"io"
 	"os"
 	"path"
 	"time"
-	"util"
 )
 
 // Hasher Logic for calculating checksums.

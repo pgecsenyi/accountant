@@ -1,7 +1,7 @@
 package bll
 
 import (
-	"util"
+	"fmr/util"
 )
 
 var testHelper = util.NewTestHelper()

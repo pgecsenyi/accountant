@@ -2,7 +2,7 @@ package dal
 
 import (
 	"container/list"
-	"util"
+	"fmr/util"
 )
 
 // MemoryDatabase Logic for calculating checksums.

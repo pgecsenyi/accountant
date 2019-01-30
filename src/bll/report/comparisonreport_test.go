@@ -1,8 +1,8 @@
 package report
 
 import (
+	"fmr/util"
 	"testing"
-	"util"
 )
 
 var comparisonReportTestHelper = util.NewTestHelper()

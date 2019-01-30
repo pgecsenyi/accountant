@@ -1,11 +1,11 @@
 package bll
 
 import (
-	"bll/common"
-	"bll/report"
-	"dal"
+	"fmr/bll/common"
+	"fmr/bll/report"
+	"fmr/dal"
+	"fmr/util"
 	"path"
-	"util"
 )
 
 // Verifier Stores settings related to verification.

@@ -2,8 +2,8 @@ package dal
 
 import (
 	"container/list"
+	"fmr/util"
 	"testing"
-	"util"
 )
 
 type onTheFlyFingerprintReadTester struct {

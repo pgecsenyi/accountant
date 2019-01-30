@@ -1,10 +1,10 @@
 package bll
 
 import (
-	"bll/common"
-	"bll/testutil"
 	"container/list"
-	"dal"
+	"fmr/bll/common"
+	"fmr/bll/testutil"
+	"fmr/dal"
 	"testing"
 )
 

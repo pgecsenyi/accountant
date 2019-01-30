@@ -1,11 +1,11 @@
 package bll
 
 import (
-	"bll/testutil"
 	"container/list"
-	"dal"
+	"fmr/bll/testutil"
+	"fmr/dal"
+	"fmr/util"
 	"testing"
-	"util"
 )
 
 func TestComparer(t *testing.T) {

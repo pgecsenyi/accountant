@@ -1,9 +1,9 @@
 package bll
 
 import (
-	"bll/common"
-	"bll/testutil"
-	"dal"
+	"fmr/bll/common"
+	"fmr/bll/testutil"
+	"fmr/dal"
 	"strings"
 	"testing"
 )

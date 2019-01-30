@@ -1,7 +1,7 @@
 package common
 
 import (
-	"dal"
+	"fmr/dal"
 	"strings"
 )
 

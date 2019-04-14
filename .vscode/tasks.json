@@ -1,19 +1,33 @@
 {
     "version": "2.0.0",
-    "command": "Build",
-    "isBuildCommand": true,
-    "type": "process",
-    "linux": {
-        "args": ["build", "-o", "../bin/main"]
-    },
-    "windows": {
-        "args": ["build", "-o", "../bin/main.exe"]
-    },
-    "options": {
-        "cwd": "${workspaceRoot}/src"
-    },
-    "presentation": {
-        "reveal": "always",
-        "panel": "new"
-    }
+    "tasks": [
+        {
+            "label": "Build",
+            "group": "build",
+            "command": "go",
+            "type": "shell",
+            "linux": {
+                "args": [
+                    "build",
+                    "-o",
+                    "../bin/main"
+                ]
+            },
+            "windows": {
+                "args": [
+                    "build",
+                    "-o",
+                    "../bin/main.exe"
+                ]
+            },
+            "options": {
+                "cwd": "${workspaceRoot}/src"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        }
+    ]
 }

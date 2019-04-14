@@ -43,5 +43,5 @@ The application is able to perform several different tasks (determined by the `-
     * goconvey
     * gofmt
     * golint
-  * Visual Studio Code 1.30.2
+  * Visual Studio Code 1.32.3
     * Extension: Go 0.9.2

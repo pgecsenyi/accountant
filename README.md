@@ -38,10 +38,11 @@ The application is able to perform several different tasks (determined by the `-
 ## Development Environment
 
   * Windows 10
-  * Go 1.11.4 windows/amd64
+  * Go 1.12.5 windows/amd64
     * delve 1.2.0
     * goconvey
     * gofmt
+    * goimports
     * golint
-  * Visual Studio Code 1.32.3
-    * Extension: Go 0.9.2
+  * Visual Studio Code 1.34.0
+    * Extension: Go 0.10.2
